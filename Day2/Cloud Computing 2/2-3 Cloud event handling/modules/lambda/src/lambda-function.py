@@ -1,11 +1,11 @@
 import json
 import os
+import time
 from datetime import datetime, timezone
 
 import boto3
 
 ec2_client = boto3.client("ec2")
-iam_client = boto3.client("iam")
 sns_client = boto3.client("sns")
 
 SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN")
@@ -23,15 +23,61 @@ def publish_alert(event_type, detail, action):
     )
 
 
+def _to_boto_ip_permissions(ip_permissions_raw):
+    """CloudTrail 이벤트의 ipPermissions.items[] 구조를
+    boto3 revoke_security_group_ingress()가 받는 IpPermissions 리스트로 변환한다."""
+    permissions = []
+
+    for perm in ip_permissions_raw:
+        entry = {"IpProtocol": perm.get("ipProtocol")}
+
+        if perm.get("fromPort") is not None:
+            entry["FromPort"] = perm["fromPort"]
+        if perm.get("toPort") is not None:
+            entry["ToPort"] = perm["toPort"]
+
+        ip_ranges = (perm.get("ipRanges") or {}).get("items", [])
+        if ip_ranges:
+            entry["IpRanges"] = [
+                {"CidrIp": r["cidrIp"]} for r in ip_ranges if r.get("cidrIp")
+            ]
+
+        ipv6_ranges = (perm.get("ipv6Ranges") or {}).get("items", [])
+        if ipv6_ranges:
+            entry["Ipv6Ranges"] = [
+                {"CidrIpv6": r["cidrIpv6"]} for r in ipv6_ranges if r.get("cidrIpv6")
+            ]
+
+        groups = (perm.get("groups") or {}).get("items", [])
+        if groups:
+            entry["UserIdGroupPairs"] = [
+                {"GroupId": g["groupId"]} for g in groups if g.get("groupId")
+            ]
+
+        if entry.get("IpRanges") or entry.get("Ipv6Ranges") or entry.get("UserIdGroupPairs"):
+            permissions.append(entry)
+
+    return permissions
+
+
 # ===== wsc2026-sg-remediation =====
 def sg_remediation_handler(event, context):
     sg_id = os.environ.get("SECURITY_GROUP_ID")
     detail = event.get("detail", {})
-    request_params = detail.get("requestParameters", {})
+    request_params = detail.get("requestParameters", {}) or {}
 
-    # TODO: Security Group에서 추가된 인바운드 규칙을 삭제하는 로직 구현
-    # ec2_client.revoke_security_group_ingress()를 사용하세요
-    # requestParameters의 ipPermissions에서 추가된 규칙 정보를 추출하세요
+    ip_permissions_raw = (request_params.get("ipPermissions") or {}).get("items", [])
+    ip_permissions = _to_boto_ip_permissions(ip_permissions_raw)
+
+    if ip_permissions:
+        try:
+            ec2_client.revoke_security_group_ingress(
+                GroupId=sg_id,
+                IpPermissions=ip_permissions,
+            )
+        except ec2_client.exceptions.ClientError:
+            # 이미 제거되었거나 존재하지 않는 규칙인 경우 무시
+            pass
 
     publish_alert(
         "SG_INBOUND_ADDED",
@@ -40,21 +86,46 @@ def sg_remediation_handler(event, context):
     )
 
 
-# ===== wsc2026-role-remediation =====
-def role_remediation_handler(event, context):
+# ===== wsc2026-ec2-stop-remediation =====
+def ec2_stop_remediation_handler(event, context):
     instance_id = os.environ.get("INSTANCE_ID")
-    role_name = os.environ.get("ROLE_NAME")
     detail = event.get("detail", {})
+    state = detail.get("state")
 
-    # TODO: 변경된 IAM Instance Profile을 원래 Role로 교체하는 로직 구현
-    # 1. ec2_client.describe_iam_instance_profile_associations()로 현재 연결 확인
-    # 2. ec2_client.replace_iam_instance_profile_association()으로 원래 Role로 교체
+    if state in ("stopping", "stopped"):
+        _wait_stopped_then_start(instance_id, context)
 
     publish_alert(
-        "ROLE_CHANGED",
-        f"IAM role on instance {instance_id} was changed and restored to {role_name}",
+        "EC2_STOPPED",
+        f"Instance {instance_id} was stopped and has been restarted",
         "RESTORED",
     )
+
+
+def _wait_stopped_then_start(instance_id, context):
+    """인스턴스가 실제로 stopped 상태가 되는 즉시 재시작한다.
+    Lambda 남은 실행시간(5초 버퍼)을 넘기지 않는 선에서 짧은 간격으로 폴링한다."""
+    poll_interval_sec = 3
+
+    while context.get_remaining_time_in_millis() > 5000:
+        try:
+            resp = ec2_client.describe_instances(InstanceIds=[instance_id])
+            current_state = resp["Reservations"][0]["Instances"][0]["State"]["Name"]
+        except Exception:
+            current_state = None
+
+        if current_state == "stopped":
+            try:
+                ec2_client.start_instances(InstanceIds=[instance_id])
+            except ec2_client.exceptions.ClientError:
+                pass
+            return
+
+        if current_state == "running":
+            # 이미 복구된 경우 (중복 이벤트 등)
+            return
+
+        time.sleep(poll_interval_sec)
 
 
 # ===== wsc2026-ec2-terminate-alert =====
@@ -62,25 +133,27 @@ def ec2_terminate_handler(event, context):
     detail = event.get("detail", {})
     instance_id = detail.get("instance-id", "unknown")
 
-    # TODO: SNS 알림을 발송하는 로직 구현
-    # publish_alert()를 사용하여 EC2_TERMINATED 이벤트 알림을 발송하세요
-    # action은 "ALERT_ONLY"
+    publish_alert(
+        "EC2_TERMINATED",
+        f"Instance {instance_id} termination detected",
+        "ALERT_ONLY",
+    )
 
 
-# ===== wsc2026-ec2-type-remediation =====
-def ec2_type_remediation_handler(event, context):
-    instance_id = os.environ.get("INSTANCE_ID")
-    original_type = os.environ.get("INSTANCE_TYPE")
+# ===== wsc2026-tag-alert =====
+def tag_alert_handler(event, context):
     detail = event.get("detail", {})
-
-    # TODO: EC2 인스턴스 타입을 원래대로 복구하는 로직 구현
-    # 1. ec2_client.stop_instances()로 인스턴스 중지
-    # 2. waiter로 중지 완료 대기
-    # 3. ec2_client.modify_instance_attribute()로 타입 변경
-    # 4. ec2_client.start_instances()로 인스턴스 시작
+    config_rule_name = detail.get("configRuleName", "unknown")
+    evaluation = detail.get("newEvaluationResult", {}) or {}
+    compliance_type = evaluation.get("complianceType", "unknown")
+    resource_id = (
+        detail.get("resourceId")
+        or detail.get("resourceType")
+        or "unknown"
+    )
 
     publish_alert(
-        "EC2_TYPE_CHANGED",
-        f"Instance {instance_id} type was changed and restored to {original_type}",
-        "RESTORED",
+        "REQUIRED_TAG_MISSING",
+        f"{config_rule_name} reported {compliance_type} for resource {resource_id}",
+        "ALERT_ONLY",
     )

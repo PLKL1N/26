@@ -40,32 +40,13 @@ data "aws_iam_policy_document" "lambda_remediation" {
   }
 
   statement {
-    sid = "RoleRemediation"
-    actions = [
-      "ec2:DescribeIamInstanceProfileAssociations",
-      "ec2:ReplaceIamInstanceProfileAssociation",
-      "ec2:AssociateIamInstanceProfile",
-      "ec2:DisassociateIamInstanceProfile",
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    sid = "TypeRemediation"
+    sid = "StopRemediation"
     actions = [
       "ec2:DescribeInstances",
       "ec2:DescribeInstanceStatus",
-      "ec2:StopInstances",
       "ec2:StartInstances",
-      "ec2:ModifyInstanceAttribute",
     ]
     resources = ["*"]
-  }
-
-  statement {
-    sid       = "PassEc2Role"
-    actions   = ["iam:PassRole"]
-    resources = [var.ec2_role_arn]
   }
 
   statement {
@@ -91,13 +72,13 @@ locals {
         SECURITY_GROUP_ID = var.security_group_id
       }
     }
-    role = {
-      function_name = "${var.project}-role-remediation"
-      handler       = "lambda-function.role_remediation_handler"
+    stop = {
+      function_name = "${var.project}-ec2-stop-remediation"
+      handler       = "lambda-function.ec2_stop_remediation_handler"
+      timeout       = 120
       environment = {
         SNS_TOPIC_ARN = aws_sns_topic.alert.arn
         INSTANCE_ID   = var.instance_id
-        ROLE_NAME     = var.ec2_role_name
       }
     }
     terminate = {
@@ -107,13 +88,11 @@ locals {
         SNS_TOPIC_ARN = aws_sns_topic.alert.arn
       }
     }
-    type = {
-      function_name = "${var.project}-ec2-type-remediation"
-      handler       = "lambda-function.ec2_type_remediation_handler"
+    tag = {
+      function_name = "${var.project}-tag-alert"
+      handler       = "lambda-function.tag_alert_handler"
       environment = {
         SNS_TOPIC_ARN = aws_sns_topic.alert.arn
-        INSTANCE_ID   = var.instance_id
-        INSTANCE_TYPE = var.instance_type
       }
     }
   }
@@ -128,7 +107,7 @@ resource "aws_lambda_function" "fn" {
   handler          = each.value.handler
   filename         = data.archive_file.lambda.output_path
   source_code_hash = data.archive_file.lambda.output_base64sha256
-  timeout          = 60
+  timeout          = try(each.value.timeout, 60)
 
   environment {
     variables = each.value.environment

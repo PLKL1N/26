@@ -7,11 +7,11 @@ output "lambda_role_arn" {
 }
 
 output "function_arns" {
-  description = "Map keyed by sg/role/terminate/type"
+  description = "Map keyed by sg/stop/terminate/tag"
   value       = { for k, v in aws_lambda_function.fn : k => v.arn }
 }
 
 output "function_names" {
-  description = "Map keyed by sg/role/terminate/type"
+  description = "Map keyed by sg/stop/terminate/tag"
   value       = { for k, v in aws_lambda_function.fn : k => v.function_name }
 }

@@ -76,18 +76,14 @@ locals {
         }
       })
     }
-    role = {
-      rule_name = "${var.project}-role-change-rule"
+    stop = {
+      rule_name = "${var.project}-ec2-stop-rule"
       event_pattern = jsonencode({
         source        = ["aws.ec2"]
-        "detail-type" = ["AWS API Call via CloudTrail"]
+        "detail-type" = ["EC2 Instance State-change Notification"]
         detail = {
-          eventSource = ["ec2.amazonaws.com"]
-          eventName = [
-            "ReplaceIamInstanceProfileAssociation",
-            "AssociateIamInstanceProfile",
-            "DisassociateIamInstanceProfile",
-          ]
+          "instance-id" = [var.instance_id]
+          state         = ["stopping"]
         }
       })
     }
@@ -102,19 +98,10 @@ locals {
         }
       })
     }
-    type = {
-      rule_name = "${var.project}-ec2-type-change-rule"
-      event_pattern = jsonencode({
-        source        = ["aws.ec2"]
-        "detail-type" = ["AWS API Call via CloudTrail"]
-        detail = {
-          eventSource       = ["ec2.amazonaws.com"]
-          eventName         = ["ModifyInstanceAttribute"]
-          requestParameters = { instanceId = [var.instance_id] }
-        }
-      })
-    }
   }
+
+  # Config Rule 준수 여부 변경(NON_COMPLIANT) 이벤트로 트리거되는 태그 알림 규칙
+  tag_rule_name = "${var.project}-tag-alert-rule"
 }
 
 resource "aws_cloudwatch_event_rule" "rule" {
@@ -141,4 +128,37 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   function_name = var.function_names[each.key]
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.rule[each.key].arn
+}
+
+#=================== Tag Alert (Config Compliance Change) ===================
+
+resource "aws_cloudwatch_event_rule" "tag_alert" {
+  name        = local.tag_rule_name
+  description = "Cloud Event Handling - ${local.tag_rule_name}"
+
+  event_pattern = jsonencode({
+    source        = ["aws.config"]
+    "detail-type" = ["Config Rules Compliance Change"]
+    detail = {
+      configRuleName = [var.required_tags_rule_name]
+      newEvaluationResult = {
+        complianceType = ["NON_COMPLIANT"]
+      }
+    }
+  })
+
+  tags = { Name = local.tag_rule_name }
+}
+
+resource "aws_cloudwatch_event_target" "tag_alert" {
+  rule = aws_cloudwatch_event_rule.tag_alert.name
+  arn  = var.function_arns["tag"]
+}
+
+resource "aws_lambda_permission" "allow_eventbridge_tag" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = var.function_names["tag"]
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.tag_alert.arn
 }

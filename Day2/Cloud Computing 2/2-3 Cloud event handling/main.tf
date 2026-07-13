@@ -51,17 +51,21 @@ module "lambda" {
   project           = var.project
   security_group_id = module.vpc.event_sg_id
   instance_id       = module.ec2.instance_id
-  ec2_role_name     = module.ec2.role_name
-  ec2_role_arn      = module.ec2.role_arn
-  instance_type     = var.instance_type
+}
+
+#=================== AWS Config ===================
+module "config" {
+  source  = "./modules/config"
+  project = var.project
 }
 
 #=================== Cloudwatch ===================
 module "cloudwatch" {
-  source            = "./modules/cloudwatch"
-  project           = var.project
-  security_group_id = module.vpc.event_sg_id
-  instance_id       = module.ec2.instance_id
-  function_arns     = module.lambda.function_arns
-  function_names    = module.lambda.function_names
+  source                   = "./modules/cloudwatch"
+  project                  = var.project
+  security_group_id        = module.vpc.event_sg_id
+  instance_id              = module.ec2.instance_id
+  function_arns            = module.lambda.function_arns
+  function_names           = module.lambda.function_names
+  required_tags_rule_name  = module.config.required_tags_rule_name
 }

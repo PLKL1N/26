@@ -8,16 +8,21 @@ variable "security_group_id" {
 }
 
 variable "instance_id" {
-  description = "wsc2026-event-ec2 instance id (terminate/type-change 필터용)"
+  description = "wsc2026-event-ec2 instance id (stop/terminate 필터용)"
   type        = string
 }
 
 variable "function_arns" {
-  description = "Lambda ARNs map keyed by sg/role/terminate/type"
+  description = "Lambda ARNs map keyed by sg/stop/terminate/tag"
   type        = map(string)
 }
 
 variable "function_names" {
-  description = "Lambda names map keyed by sg/role/terminate/type"
+  description = "Lambda names map keyed by sg/stop/terminate/tag"
   type        = map(string)
+}
+
+variable "required_tags_rule_name" {
+  description = "wsc2026-required-tags-rule (AWS Config Rule) 이름 - tag-alert 트리거 필터용"
+  type        = string
 }
