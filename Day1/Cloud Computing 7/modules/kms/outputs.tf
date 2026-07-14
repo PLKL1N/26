@@ -11,5 +11,5 @@ output "kms_alias_name" {
 }
 
 output "kms_replica_arn" {
-  value = try(aws_kms_alias.this_replica[0].arn, null)
+  value = try(aws_kms_replica_key.this[0].arn, null)
 }

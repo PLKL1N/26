@@ -36,8 +36,15 @@ eksctl create podidentityassociation \
   --role-arn $FLUENT_BIT_ROLE_ARN \
   --create-service-account
 
+# Pod Identity 자격증명은 파드 생성 시점에 webhook이 주입하므로,
+# association 전파 전에 파드가 뜨면 자격증명 없이 실행되어 AccessDenied가 발생한다.
+# DaemonSet 적용 전 association이 완전히 전파되도록 대기한다.
+sleep 15
+
 kubectl apply -f /home/ec2-user/eks/manifest/logging/configmap.yaml
 kubectl apply -f /home/ec2-user/eks/manifest/logging/daemonset.yaml
+
+kubectl rollout status daemonset/fluent-bit -n logging --timeout=120s
 
 eksctl create podidentityassociation \
   --region $REGION_CODE \
