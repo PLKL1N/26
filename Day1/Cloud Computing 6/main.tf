@@ -18,6 +18,10 @@ terraform {
       source  = "hashicorp/null"
       version = ">= 3.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = ">= 2.0"
+    }
   }
 }
 
@@ -25,70 +29,146 @@ provider "aws" {
   region = var.region
 }
 
-# =========================== VPC ===========================
-# Multi-AZ (ap-northeast-1a / 1c). Public subnets host the ALBs created by the
-# AWS Load Balancer Controller; private subnets host the EKS node group.
-# Subnet tags are required so EKS/ALB controller can auto-discover subnets.
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
 module "vpc" {
   source = "./modules/vpc"
 
-  project      = var.project
-  cluster_name = var.cluster_name
-  vpc_cidr     = "10.0.0.0/16"
-
-  availability_zones   = ["${var.region}a", "${var.region}c"]
-  public_subnet_cidrs  = ["10.0.0.0/24", "10.0.1.0/24"]
-  private_subnet_cidrs = ["10.0.16.0/20", "10.0.32.0/20"]
+  project              = var.project
+  vpc_cidr             = "10.0.0.0/16"
+  availability_zones   = ["ap-northeast-2a", "ap-northeast-2b"]
+  private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+  eks_cluster_name     = "${var.project}-eks-cluster"
 }
 
-# =========================== IAM ===========================
-# Admin role/instance-profile for the bastion so eksctl / kubectl / helm / ECR
-# all work from a single host.
 module "iam" {
   source        = "./modules/iam"
   instance_name = "${var.project}-bastion"
 }
 
-# =========================== ECR ===========================
-# Registry for the log-generator container image. EKS nodes pull from here.
-module "ecr" {
-  source     = "./modules/ecr"
-  repo_name  = "${var.project}-app"
-}
+module "mgmt" {
+  source = "./modules/mgmt"
 
-# =========================== S3 (deploy artifacts) ===========================
-# kubernetes/ 폴더를 버킷에 올려두고 Bastion 이 부팅 시 받아갑니다.
-module "s3" {
-  source         = "./modules/s3"
-  project        = var.project
-  kubernetes_dir = "${path.root}/kubernetes"
-}
-
-# =========================== EC2 (Bastion) ===========================
-module "ec2" {
-  source = "./modules/ec2"
-
+  project               = var.project
   instance_name         = "${var.project}-bastion"
   keypair_name          = "${var.project}-key"
   instance_type         = "t3.small"
-  public_subnet_id      = module.vpc.public_subnet_ids[0]
-  bastion_sg_id         = module.vpc.bastion_sg_id
   instance_profile_name = module.iam.instance_profile_name
 
-  region             = var.region
-  cluster_name       = var.cluster_name
-  cluster_version    = var.cluster_version
-  ecr_repository_url = module.ecr.repository_url
-
-  availability_zones = ["${var.region}a", "${var.region}c"]
-  vpc_id             = module.vpc.vpc_id
-  public_subnet_ids  = module.vpc.public_subnet_ids
-  private_subnet_ids = module.vpc.private_subnet_ids
-
-  artifacts_bucket  = module.s3.bucket_name
-  competitor_number = var.competitor_number
-  auto_deploy       = var.auto_deploy
-
-  # S3 객체 업로드가 끝난 뒤 Bastion 이 부팅되도록 보장
-  depends_on = [module.s3]
+  allowed_ssh_cidr = "0.0.0.0/0"
 }
+
+module "ecr" {
+  source = "./modules/ecr"
+
+  project              = var.project
+  book_repository_name = "book"
+}
+
+module "dynamodb" {
+  source = "./modules/dynamodb"
+
+  project      = var.project
+  table_name   = "books"
+  db_kms_alias = "alias/${var.project}-db-key"
+}
+
+module "eks_kms" {
+  source        = "./modules/eks-kms"
+  project       = var.project
+  eks_kms_alias = "alias/${var.project}-eks-key"
+}
+
+module "cloudwatch" {
+  source         = "./modules/cloudwatch"
+  project        = var.project
+  log_group_name = "/eks/book-svc/access"
+}
+
+module "s3" {
+  source      = "./modules/s3"
+  project            = var.project
+  exam_number        = var.exam_number
+  cloudfront_enabled = var.enable_cloudfront
+}
+
+module "lambda" {
+  source = "./modules/lambda"
+
+  project        = var.project
+  function_name  = "${var.project}-book-reservation"
+  runtime        = "python3.14"
+  table_name     = module.dynamodb.table_name
+  table_arn      = module.dynamodb.table_arn
+  gsi_name       = module.dynamodb.gsi_name
+  db_kms_key_arn = module.dynamodb.db_kms_key_arn
+}
+
+module "waf" {
+  source       = "./modules/waf"
+  project      = var.project
+  web_acl_name = "${var.project}-waf-acl"
+
+  providers = {
+    aws = aws.us_east_1
+  }
+}
+
+module "cloudfront" {
+  source = "./modules/cloudfront"
+  count  = var.enable_cloudfront ? 1 : 0
+
+  project                        = var.project
+  cdn_name                       = "${var.project}-cdn"
+  vpc_origin_name                = "${var.project}-alb-origin"
+  alb_name                       = "${var.project}-alb"
+  s3_bucket_regional_domain_name = module.s3.bucket_regional_domain_name
+  lambda_function_url_domain     = module.lambda.function_url_domain
+  web_acl_arn                    = module.waf.web_acl_arn
+}
+
+resource "null_resource" "bootstrap" {
+  depends_on = [
+    module.vpc,
+    module.mgmt,
+    module.iam,
+    module.ecr,
+    module.dynamodb,
+    module.eks_kms,
+    module.cloudwatch,
+    module.s3,
+    module.lambda,
+  ]
+
+  triggers = {
+    bastion_id = module.mgmt.bastion_instance_id
+  }
+
+  connection {
+    type        = "ssh"
+    host        = module.mgmt.bastion_public_ip
+    user        = "ec2-user"
+    private_key = module.mgmt.bastion_private_key_pem
+    timeout     = "10m"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/modules/eks"
+    destination = "/home/ec2-user"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "cloud-init status --wait || true",
+      "sed -i 's/\\r$//' /home/ec2-user/eks/scripts/*.sh",
+      "export PATH=/usr/local/bin:/usr/local/sbin:$PATH",
+      "chmod +x /home/ec2-user/eks/scripts/*.sh",
+      "sudo env \"PATH=$PATH\" bash /home/ec2-user/eks/scripts/cluster-up.sh",
+      "sudo env \"PATH=$PATH\" bash /home/ec2-user/eks/scripts/kube-apps.sh",
+    ]
+  }
+}
+

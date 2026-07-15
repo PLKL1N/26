@@ -1,8 +1,5 @@
-output "bucket_name" {
-  value = aws_s3_bucket.artifacts.id
-}
-
-# Bastion user_data 가 이 객체들에 depends_on 걸어 업로드 완료를 보장
-output "object_keys" {
-  value = [for o in aws_s3_object.kubernetes : o.key]
-}
+output "bucket_name"      { value = aws_s3_bucket.static.bucket }
+output "bucket_arn"       { value = aws_s3_bucket.static.arn }
+output "bucket_regional_domain_name" { value = aws_s3_bucket.static.bucket_regional_domain_name }
+output "s3_kms_key_arn"   { value = aws_kms_key.s3.arn }
+output "s3_kms_alias"     { value = aws_kms_alias.s3.name }

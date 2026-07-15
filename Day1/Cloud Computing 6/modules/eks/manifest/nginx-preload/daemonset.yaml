@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-preload
+  namespace: skills
+  labels:
+    app: nginx-preload
+spec:
+  selector:
+    matchLabels:
+      app: nginx-preload
+  template:
+    metadata:
+      labels:
+        app: nginx-preload
+    spec:
+      tolerations:
+        - operator: Exists
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: preload
+          image: IMAGE_PLACEHOLDER
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "sleep infinity"]
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"
