@@ -11,7 +11,7 @@ variable "region" {
 }
 
 variable "exam_number" {
-  description = "비번호 (S3 bucket: gj2026-static-<비번호>)"
+  description = "비번호 입력"
   type        = string
 }
 
