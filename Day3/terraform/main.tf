@@ -76,7 +76,7 @@ module "rds" {
 }
 
 
-# =========================== ALB (EKS Ingress, 콘솔에서 생성) ===========================
+# =========================== ALB (EKS Ingress) ===========================
 
 data "aws_lb" "app" {
   count = var.enable_cloudfront ? 1 : 0
@@ -92,7 +92,7 @@ module "s3" {
 }
 
 
-# =========================== CloudFront (단일 엔드포인트) ===========================
+# =========================== CloudFront ===========================
 
 module "cloudfront" {
   count  = var.enable_cloudfront ? 1 : 0
