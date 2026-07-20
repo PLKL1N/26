@@ -264,14 +264,18 @@ dashboards:
               },
               "options": {
                 "showTime": true,
-                "sortOrder": "Descending",
+                "showLabels": true,
+                "showCommonLabels": false,
                 "wrapLogMessage": false,
-                "enableLogDetails": true
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
               },
               "targets": [
                 {
                   "refId": "A",
-                  "expr": "{k8s_namespace_name=\"o11y\"} | json ts=\"ts\" | __error__=\"\""
+                  "expr": "{k8s_namespace_name=\"o11y\"} | json | __error__=\"\" | label_format level=\"\""
                 }
               ]
             }

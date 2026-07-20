@@ -120,7 +120,7 @@ sed -e "s#__GRAFANA_TG_ARN__#${GRAFANA_TG_ARN}#g" \
     -e "s#__ALB_SG_ID__#${ALB_SG_ID}#g" \
     30-grafana-tgb.yaml | kubectl apply -f -
 
-# ---- 로그 트래픽 생성기 (최근 로그가 항상 존재하도록) ----
+# ---- 로그 시드 (배포 직후 info/warn/error 로그를 1회 생성) ----
 kubectl apply -f 40-traffic.yaml
 
 echo
