@@ -8,8 +8,6 @@ resource "aws_cloudfront_origin_access_control" "s3" {
 }
 
 # --------------------------- Function: /images 접두어 제거 ---------------------------
-# CloudFront 요청 경로: /images/<object path>
-# S3 버킷 오브젝트 키       : <object path>  (images/ 접두어 없음)
 
 resource "aws_cloudfront_function" "rewrite_images" {
   name    = "${var.project}-rewrite-images-prefix"
@@ -19,8 +17,6 @@ resource "aws_cloudfront_function" "rewrite_images" {
 }
 
 # --------------------------- CloudFront Distribution (단일 엔드포인트) ---------------------------
-# 기본 동작(*)        -> ALB(EKS: user/product/stress API)
-# /images/* 동작      -> S3(product 이미지 정적 파일)
 
 resource "aws_cloudfront_distribution" "this" {
   enabled     = true
@@ -53,8 +49,8 @@ resource "aws_cloudfront_distribution" "this" {
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods         = ["GET", "HEAD"]
 
-    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled (동적 API)
-    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac" # Managed-AllViewerExceptHostHeader
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
   }
 
   ordered_cache_behavior {
@@ -64,7 +60,7 @@ resource "aws_cloudfront_distribution" "this" {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
 
-    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized (정적 이미지)
+    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
 
     function_association {
       event_type   = "viewer-request"

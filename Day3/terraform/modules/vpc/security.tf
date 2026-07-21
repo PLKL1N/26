@@ -4,7 +4,6 @@ resource "aws_security_group" "bastion_sg" {
   description = "Allow SSH and HTTP traffic"
   vpc_id      = aws_vpc.main.id
 
-  # Inbound
   ingress {
     from_port   = 22
     to_port     = 22
@@ -12,7 +11,6 @@ resource "aws_security_group" "bastion_sg" {
     cidr_blocks = ["0.0.0.0/0"] 
   }
 
-  # Outbound
   egress {
     from_port   = 0
     to_port     = 0
