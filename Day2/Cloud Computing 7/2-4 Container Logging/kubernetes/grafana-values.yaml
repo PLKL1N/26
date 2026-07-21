@@ -1,9 +1,5 @@
-# 5. Dashboard - Grafana (monitoring NS, ALB)
-# helm install o11y-grafana grafana/grafana -n monitoring -f grafana-values.yaml
 fullnameOverride: o11y-grafana
 
-# Admin 계정: skills<선수등록번호> / GoodJob!Skills<선수등록번호>^^
-# 아래 __NN__ 을 본인 선수등록번호로 치환하세요 (deploy.sh 가 COMPETITOR 로 치환).
 adminUser: skills__NN__
 adminPassword: GoodJob!Skills__NN__^^
 
@@ -11,12 +7,9 @@ service:
   type: ClusterIP
   port: 80
 
-# ALB(o11y-grafana-alb) / TG(o11y-grafana-tg) 는 Terraform 이 이름 고정해 생성하고,
-# 파드 등록은 TargetGroupBinding(30-grafana-tgb.yaml)이 담당하므로 chart ingress 는 끕니다.
 ingress:
   enabled: false
 
-# Loki Datasource
 datasources:
   datasources.yaml:
     apiVersion: 1
@@ -38,8 +31,6 @@ dashboardProviders:
         type: file
         disableDeletion: false
         editable: true
-        # 파일로 프로비저닝된 대시보드는 기본적으로 UI 저장이 막힙니다.
-        # 채점 중 패널을 손봐야 할 수 있으므로 UI 수정/저장을 허용합니다.
         allowUiUpdates: true
         options:
           path: /var/lib/grafana/dashboards/default
