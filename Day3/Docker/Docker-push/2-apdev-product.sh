@@ -1,6 +1,7 @@
 #==================================================================
 
 REGION_CODE=ap-northeast-2
+ACCOUNT_ID=$(aws sts get caller-identity --query Account --output text)
 SECRET_NAME=$(aws secretsmanager list-secrets --query "SecretList[?Name=='rds-secret'].Name" --output text --region $REGION_CODE)
 DB_USER=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query "SecretString" --output text --region $REGION_CODE | jq -r ".username")
 DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query "SecretString" --output text --region $REGION_CODE | jq -r ".password")

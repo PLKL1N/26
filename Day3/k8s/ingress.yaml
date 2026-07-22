@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app
+  namespace: default
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/load-balancer-name: apdev-alb
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /healthcheck
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/actions.response-404: >
+      {"type":"fixed-response","fixedResponseConfig":
+      {"contentType":"application/json","statusCode":"404","messageBody":"{\"error\":\"not found\"}"}} 
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /v1/user
+            pathType: Prefix
+            backend:
+              service:
+                name: user
+                port: { number: 80 }
+          - path: /v1/product
+            pathType: Prefix
+            backend:
+              service:
+                name: product
+                port: { number: 80 }
+          - path: /v1/stress
+            pathType: Prefix
+            backend:
+              service:
+                name: stress
+                port: { number: 80 }
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: response-404
+                port: { name: use-annotation }
