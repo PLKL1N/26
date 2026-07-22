@@ -1,0 +1,13 @@
+ARG APP=product
+ 
+FROM gcr.io/distroless/base-debian12:nonroot
+ARG APP
+ 
+WORKDIR /app
+ENV TZ=Asia/Seoul
+
+COPY --chmod=755 ./${APP} /app/user
+ 
+USER nonroot
+EXPOSE 8080
+ENTRYPOINT ["/app/user"]
