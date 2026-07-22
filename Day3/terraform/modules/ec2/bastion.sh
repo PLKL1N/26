@@ -1,6 +1,4 @@
 #!/bin/bash
-dnf update -y
-dnf upgrade -y
 dnf install --allowerasing -y jq curl wget unzip vim
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
@@ -24,26 +22,10 @@ curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.35.2/2026-02-27/bin/linu
 chmod +x kubectl
 mv kubectl /usr/local/bin
 
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
 rm -rf get_helm.sh
-
-helm repo add eks https://aws.github.io/eks-charts
-helm repo update eks
-helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-  -n kube-system \
-  --set clusterName=apdev-eks-cluster \
-  --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controller
-
-mkdir k9s && cd k9s/
-curl -LO https://github.com/derailed/k9s/releases/download/v0.50.18/k9s_Linux_amd64.tar.gz
-tar -xf k9s_Linux_amd64.tar.gz
-chmod +x k9s
-sudo mv k9s /usr/local/bin
-cd ..
-rm -rf k9s
 
 mkdir -p /home/ec2-user/app/user /home/ec2-user/app/product /home/ec2-user/app/stress /home/ec2-user/kubernetes
 chown -R ec2-user:ec2-user /home/ec2-user/app /home/ec2-user/kubernetes
