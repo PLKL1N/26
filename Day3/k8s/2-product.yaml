@@ -1,0 +1,74 @@
+# =========================== product ===========================
+# product 만 S3 업로드가 있어 IRSA ServiceAccount(product) 를 씀
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product
+  namespace: default
+  labels: { app: product }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: product }
+  template:
+    metadata:
+      labels: { app: product }
+    spec:
+      serviceAccountName: product
+      containers:
+        - name: product
+          image: IMAGE_ACCOUNT.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-product:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: rds-credentials
+          env:
+            - name: AWS_REGION
+              value: ap-northeast-2
+            # ▼ 바이너리가 기대하는 S3 관련 env 는 확인 후 채울 것
+            #   (문제지 env 표엔 MYSQL_* 만 명시됨. 버킷명/키를 env로 받는지
+            #    바이너리 문자열/실행 로그로 확인해서 추가)
+            # - name: S3_BUCKET
+            #   value: <apdev-images-xxxx>
+          readinessProbe:
+            httpGet: { path: /healthcheck, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthcheck, port: 8080 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product
+  namespace: default
+spec:
+  selector: { app: product }
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: product
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: product
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 60 }

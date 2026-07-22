@@ -1,0 +1,64 @@
+# =========================== user ===========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+  namespace: default
+  labels: { app: user }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: user }
+  template:
+    metadata:
+      labels: { app: user }
+    spec:
+      containers:
+        - name: user
+          image: IMAGE_ACCOUNT.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-user:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: rds-credentials   # MYSQL_USER/PASSWORD/HOST/PORT/DBNAME
+          readinessProbe:
+            httpGet: { path: /healthcheck, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthcheck, port: 8080 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+  namespace: default
+spec:
+  selector: { app: user }
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: user
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: user
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 60 }
