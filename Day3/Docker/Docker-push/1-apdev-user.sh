@@ -22,16 +22,16 @@ docker run -d --name user-test \
   -e MYSQL_HOST=$DB_HOST \
   -e MYSQL_PORT=$DB_PORT \
   -e MYSQL_DBNAME=$DB_DBNAME \
-  -p 8082:8080 \
+  -p 8080:8080 \
   apdev-user:test
 
 sleep 2
 docker logs user-test
-curl http://localhost:8082/healthcheck
-curl -w "\nHTTP:%{http_code}\n" -X POST http://localhost:8082/v1/user \
+curl http://localhost:8080/healthcheck
+curl -w "\nHTTP:%{http_code}\n" -X POST http://localhost:8080/v1/user \
   -H "Content-Type: application/json" \
   -d '{"requestid":"1","uuid":"u-1","username":"testuser1","email":"testuser1@example.org"}'
-curl -w "\nHTTP:%{http_code}\n" "http://localhost:8082/v1/user?email=testuser1@example.org"
+curl -w "\nHTTP:%{http_code}\n" "http://localhost:8080/v1/user?email=testuser1@example.org"
 
 
 #==================================================================

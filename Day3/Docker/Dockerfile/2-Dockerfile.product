@@ -6,8 +6,8 @@ ARG APP
 WORKDIR /app
 ENV TZ=Asia/Seoul
 
-COPY --chmod=755 ./${APP} /app/product
+COPY --chmod=755 ./${APP} /app/app
  
 USER nonroot
 EXPOSE 8080
-ENTRYPOINT ["/app/product"]
+ENTRYPOINT ["/app/app"]

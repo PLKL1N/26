@@ -1,4 +1,4 @@
-ARG APP=product
+ARG APP=stress
  
 FROM gcr.io/distroless/base-debian12:nonroot
 ARG APP
@@ -6,8 +6,8 @@ ARG APP
 WORKDIR /app
 ENV TZ=Asia/Seoul
 
-COPY --chmod=755 ./${APP} /app/stress
+COPY --chmod=755 ./${APP} /app/app
  
 USER nonroot
 EXPOSE 8080
-ENTRYPOINT ["/app/stress"]
+ENTRYPOINT ["/app/app"]

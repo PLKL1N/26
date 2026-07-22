@@ -23,21 +23,21 @@ docker run -d --name product-test \
   -e MYSQL_PORT=$DB_PORT \
   -e MYSQL_DBNAME=$DB_DBNAME \
   -e S3_BUCKET=$S3_BUCKET \
-  -p 8080:8080 \
+  -p 8081:8080 \
   apdev-product:test
 
 sleep 2
 docker logs product-test
-curl http://localhost:8080/healthcheck
+curl http://localhost:8081/healthcheck
 
 
 #==================================================================
 
-curl -w "\nHTTP:%{http_code}\n" -X POST http://localhost:8080/v1/product \
+curl -w "\nHTTP:%{http_code}\n" -X POST http://localhost:8081/v1/product \
   -H "Content-Type: application/json" \
   -d '{"requestid":"1","uuid":"u-1","id":"test001","name":"testitem","price":1000}'
 
-curl -w "\nHTTP:%{http_code}\n" "http://localhost:8080/v1/product?id=test001"
+curl -w "\nHTTP:%{http_code}\n" "http://localhost:8081/v1/product?id=test001"
 
 
 #==================================================================
