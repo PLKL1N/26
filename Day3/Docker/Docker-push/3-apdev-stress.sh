@@ -24,8 +24,6 @@ docker run -d --name stress-test \
 sleep 2
 docker logs stress-test
 
-sleep 2
-docker logs apdev-stress:test
 curl -w "\nHTTP:%{http_code}\n" http://localhost:8082/healthcheck
 curl -w "\nHTTP:%{http_code}\n" -X POST http://localhost:8082/v1/stress \
   -H "Content-Type: application/json" \
