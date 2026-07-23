@@ -14,5 +14,3 @@ CREATE TABLE IF NOT EXISTS product (
   image_path VARCHAR(500) DEFAULT NULL,
   PRIMARY KEY (id)
 );
-
-
