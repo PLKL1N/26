@@ -26,11 +26,6 @@ spec:
           env:
             - name: AWS_REGION
               value: ap-northeast-2
-            # ▼ 바이너리가 기대하는 S3 관련 env 는 확인 후 채울 것
-            #   (문제지 env 표엔 MYSQL_* 만 명시됨. 버킷명/키를 env로 받는지
-            #    바이너리 문자열/실행 로그로 확인해서 추가)
-            # - name: S3_BUCKET
-            #   value: <apdev-images-xxxx>
           readinessProbe:
             httpGet: { path: /healthcheck, port: 8080 }
             initialDelaySeconds: 5
