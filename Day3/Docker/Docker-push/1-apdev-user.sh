@@ -1,4 +1,3 @@
-#==================================================================
 
 REGION_CODE=ap-northeast-2
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -8,9 +7,6 @@ DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --que
 DB_HOST=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query "SecretString" --output text --region $REGION_CODE | jq -r ".host")
 DB_PORT=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query "SecretString" --output text --region $REGION_CODE | jq -r ".port")
 DB_DBNAME=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query "SecretString" --output text --region $REGION_CODE | jq -r ".dbname")
-
-
-#==================================================================
 
 cd /home/ec2-user/app/user
 docker build -t apdev-user:test .
