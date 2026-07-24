@@ -15,12 +15,22 @@ spec:
     spec:
       containers:
         - name: user
-          image: IMAGE_ACCOUNT.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-user:latest
+          image: 637423625226.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-product:latest
           ports:
             - containerPort: 8080
-          envFrom:
-            - secretRef:
-                name: rds-credentials   # MYSQL_USER/PASSWORD/HOST/PORT/DBNAME
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: apdev-db-config
+                  key: my-account 
+            - name: MYSQL_PASSWORD
+
+            - name: MYSQL_HOST
+
+            - name: MYSQL_PORT
+
+            - name: MYSQL_DBNAME
           readinessProbe:
             httpGet: { path: /healthcheck, port: 8080 }
             initialDelaySeconds: 5
