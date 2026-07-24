@@ -3,45 +3,75 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user
-  namespace: default
-  labels: { app: user }
+  namespace: apdev
+  labels: 
+   app: user 
 spec:
   replicas: 2
   selector:
-    matchLabels: { app: user }
+    matchLabels: 
+      app: user 
   template:
     metadata:
-      labels: { app: user }
+      labels:  
+        app: user 
     spec:
       containers:
         - name: user
           image: 637423625226.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-product:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
+          resources:
+            requests: 
+              cpu: "100m" 
+              memory: "128Mi"
+            limits:  
+              cpu: "500m" 
+              memory: "256Mi"
           env:
             - name: MYSQL_USER
               valueFrom:
                 configMapKeyRef:
                   name: apdev-db-config
-                  key: my-account 
+                  key: MYSQL_USER
             - name: MYSQL_PASSWORD
-
+              valueFrom:
+                secretKeyRef:
+                  name: apdev-db-config
+                  key: MYSQL_PASSWORD
             - name: MYSQL_HOST
-
+              valueFrom:
+                configMapKeyRef:
+                  name: apdev-db-config
+                  key: MYSQL_HOST 
             - name: MYSQL_PORT
-
+              valueFrom:
+                configMapKeyRef:
+                  name: apdev-db-config
+                  key: MYSQL_PORT 
             - name: MYSQL_DBNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: apdev-db-config
+                  key: MYSQL_DBNAME
           readinessProbe:
-            httpGet: { path: /healthcheck, port: 8080 }
+            httpGet: 
+              path: /healthcheck 
+              port: 8080 
             initialDelaySeconds: 5
             periodSeconds: 5
           livenessProbe:
-            httpGet: { path: /healthcheck, port: 8080 }
+            httpGet: 
+              path: /healthcheck 
+              port: 8080 
             initialDelaySeconds: 10
             periodSeconds: 10
-          resources:
-            requests: { cpu: "100m", memory: "128Mi" }
-            limits:   { cpu: "500m", memory: "256Mi" }
+          lifecycle:
+            preStop:
+             exec:
+              command: ["/bin/sh", "-c", "sleep 20"]
+      terminationGracePeriodSeconds: 30
 ---
 apiVersion: v1
 kind: Service
@@ -49,7 +79,8 @@ metadata:
   name: user
   namespace: default
 spec:
-  selector: { app: user }
+  selector: 
+    app: user
   ports:
     - port: 80
       targetPort: 8080
@@ -71,4 +102,6 @@ spec:
     - type: Resource
       resource:
         name: cpu
-        target: { type: Utilization, averageUtilization: 60 }
+        target: 
+          type: Utilization 
+          averageUtilization: 60
