@@ -23,22 +23,26 @@ spec:
             backend:
               service:
                 name: user
-                port: { number: 80 }
+                port:  
+                  number: 80
           - path: /v1/product
             pathType: Prefix
             backend:
               service:
                 name: product
-                port: { number: 80 }
+                port: 
+                  number: 80
           - path: /v1/stress
             pathType: Prefix
             backend:
               service:
                 name: stress
-                port: { number: 80 }
+                port: 
+                  number: 80
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: response-404
-                port: { name: use-annotation }
+                port:
+                  name: use-annotation

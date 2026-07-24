@@ -1,23 +1,22 @@
-# =========================== user ===========================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user
+  name: product-deploy
   namespace: apdev
   labels: 
-   app: user 
+   app: product 
 spec:
   replicas: 2
   selector:
     matchLabels: 
-      app: user 
+      app: product 
   template:
     metadata:
       labels:  
-        app: user 
+        app: product 
     spec:
       containers:
-        - name: user
+        - name: product
           image: 637423625226.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-product:latest
           imagePullPolicy: Always
           ports:
@@ -30,15 +29,15 @@ spec:
               cpu: "500m" 
               memory: "256Mi"
           env:
-            - name: MYSQL_USER
+            - name: MYSQL_product
               valueFrom:
                 configMapKeyRef:
                   name: apdev-db-config
-                  key: MYSQL_USER
+                  key: MYSQL_product
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: apdev-db-config
+                  name: apdev-db-secret
                   key: MYSQL_PASSWORD
             - name: MYSQL_HOST
               valueFrom:
@@ -76,11 +75,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: user
-  namespace: default
+  name: product-svc
+  namespace: apdev
 spec:
   selector: 
-    app: user
+    app: product
   ports:
     - port: 80
       targetPort: 8080
@@ -89,19 +88,19 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: user
-  namespace: default
+  name: product
+  namespace: apdev
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: user
+    name: product
   minReplicas: 2
   maxReplicas: 6
   metrics:
     - type: Resource
       resource:
         name: cpu
-        target: 
-          type: Utilization 
+        target:
+          type: Utilization
           averageUtilization: 60
