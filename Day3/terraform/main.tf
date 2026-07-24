@@ -40,7 +40,6 @@ module "ec2" {
   instance_profile_name = module.iam.instance_profile_name
   src_bucket            = module.file.bucket_id
 
-  # src 업로드 + S3 정책 생성 이후에 부팅되어야 함
   depends_on = [module.file, module.s3]
 }
 
