@@ -30,7 +30,6 @@ curl http://localhost:8081/healthcheck
 curl -w "\nHTTP:%{http_code}\n" -X POST http://localhost:8081/v1/product \
   -H "Content-Type: application/json" \
   -d '{"requestid":"1","uuid":"u-1","id":"test001","name":"testitem","price":1000}'
-
 curl -w "\nHTTP:%{http_code}\n" "http://localhost:8081/v1/product?id=test001"
 
 
