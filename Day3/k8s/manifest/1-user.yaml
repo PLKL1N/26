@@ -34,11 +34,6 @@ spec:
                 configMapKeyRef:
                   name: apdev-db-config
                   key: MYSQL_USER
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: apdev-db-secret
-                  key: MYSQL_PASSWORD
             - name: MYSQL_HOST
               valueFrom:
                 configMapKeyRef:
@@ -54,6 +49,11 @@ spec:
                 configMapKeyRef:
                   name: apdev-db-config
                   key: MYSQL_DBNAME
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: apdev-db-secret
+                  key: MYSQL_PASSWORD
           readinessProbe:
             httpGet: 
               path: /healthcheck 
@@ -88,7 +88,7 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: user
+  name: user-hpa
   namespace: apdev
 spec:
   scaleTargetRef:

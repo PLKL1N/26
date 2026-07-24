@@ -29,16 +29,11 @@ spec:
               cpu: "500m" 
               memory: "256Mi"
           env:
-            - name: MYSQL_product
+            - name: MYSQL_USER
               valueFrom:
                 configMapKeyRef:
                   name: apdev-db-config
-                  key: MYSQL_product
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: apdev-db-secret
-                  key: MYSQL_PASSWORD
+                  key: MYSQL_USER
             - name: MYSQL_HOST
               valueFrom:
                 configMapKeyRef:
@@ -54,6 +49,11 @@ spec:
                 configMapKeyRef:
                   name: apdev-db-config
                   key: MYSQL_DBNAME
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: apdev-db-secret
+                  key: MYSQL_PASSWORD
           readinessProbe:
             httpGet: 
               path: /healthcheck 
@@ -88,13 +88,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: product
+  name: product-hpa
   namespace: apdev
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: product
+    name: product-deploy
   minReplicas: 2
   maxReplicas: 6
   metrics:
