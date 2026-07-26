@@ -1,5 +1,5 @@
 ### 인프라 구성
-<br>
+
 ```
 terraform init
 terraform apply --auto-approve -parallelism=100
