@@ -62,6 +62,7 @@ eksctl create iamserviceaccount \
   --namespace apdev \
   --name product \
   --attach-policy-arn arn:aws:iam::$ACCOUNT_ID:policy/apdev-product-s3-access \
+  --region $REGION_CODE \
   --approve
 
 SECRET_NAME=$(aws secretsmanager list-secrets --query "SecretList[?Name=='rds-secret'].Name" --output text --region $REGION_CODE)
@@ -84,5 +85,3 @@ sed -i "s|DB_NAME|$DB_NAME|g" $K8S_DIR/*.yaml
 sed -i "s|S3_BUCKET_NAME|$S3_BUCKET_NAME|g" $K8S_DIR/*.yaml
 
 chown -R ec2-user:ec2-user $K8S_DIR
-
-kubectl apply -f $K8S_DIR/0-config.yaml

@@ -29,6 +29,11 @@ chmod 700 get_helm.sh
 ./get_helm.sh
 rm -rf get_helm.sh
 
+K9S_VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | jq -r .tag_name)
+curl -fsSLO https://github.com/derailed/k9s/releases/download/$${K9S_VERSION}/k9s_Linux_amd64.tar.gz
+sudo tar -C /usr/local/bin -xf k9s_Linux_amd64.tar.gz
+chmod +x /usr/local/bin/k9s
+
 mkdir -p /home/ec2-user/app/user /home/ec2-user/app/product /home/ec2-user/app/stress /home/ec2-user/kubernetes
 
 aws s3 cp s3://${src_bucket}/ /home/ec2-user/ --recursive --region $REGION_CODE
