@@ -15,11 +15,11 @@ provider "aws" {
 
 # =========================== VPC ===========================
 
-module "vpc" { 
+module "vpc" {
   source = "./modules/vpc"
 
-  project              = var.project
-  vpc_cidr             = "10.0.0.0/16"
+  project = var.project
+  vpc_cidr = "10.0.0.0/16"
 
   availability_zones   = ["ap-northeast-2a", "ap-northeast-2c", "ap-northeast-2b"]
   public_subnet_cidrs  = ["10.0.0.0/24", "10.0.1.0/24", "10.0.4.0/24"]
@@ -32,11 +32,11 @@ module "vpc" {
 module "ec2" {
   source = "./modules/ec2"
 
-  instance_name    = "${var.project}-bastion"
-  keypair_name     = "${var.project}-key"
-  instance_type    = "t3.medium"
-  public_subnet_id = module.vpc.public_subnet_ids[0]
-  bastion_sg_id    = module.vpc.bastion_sg_id
+  instance_name         = "${var.project}-bastion"
+  keypair_name          = "${var.project}-key"
+  instance_type         = "t3.medium"
+  public_subnet_id      = module.vpc.public_subnet_ids[0]
+  bastion_sg_id         = module.vpc.bastion_sg_id
   instance_profile_name = module.iam.instance_profile_name
   src_bucket            = module.file.bucket_id
 
@@ -44,7 +44,7 @@ module "ec2" {
 }
 
 
-# =========================== FILE (src -> S3) ===========================
+# =========================== FILE ===========================
 
 module "file" {
   source  = "./modules/file"
@@ -87,10 +87,10 @@ module "rds" {
 }
 
 
-# =========================== ALB (EKS Ingress) ===========================
+# =========================== ALB Ingress ===========================
 
 data "aws_lb" "app" {
-  count = var.enable_cloudfront ? 1 : 0
+  count = (var.enable_cloudfront || var.enable_cloudwatch) ? 1 : 0
   name  = var.alb_name
 }
 
@@ -115,4 +115,15 @@ module "cloudfront" {
   s3_bucket_regional_domain_name = module.s3.bucket_regional_domain_name
 
   alb_dns_name = data.aws_lb.app[0].dns_name
+}
+
+
+# =========================== CloudWatch ===========================
+
+module "cloudwatch" {
+  count  = var.enable_cloudwatch ? 1 : 0
+  source = "./modules/cloudwatch"
+
+  project        = var.project
+  alb_arn_suffix = data.aws_lb.app[0].arn_suffix
 }

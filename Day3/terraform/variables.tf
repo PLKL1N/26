@@ -17,7 +17,12 @@ variable "alb_name" {
 }
 
 variable "enable_cloudfront" {
-  description = "ALB(EKS Ingress)가 이미 생성되어 있을 때만 true로 apply. false면 cloudfront/data.aws_lb 조회를 건너뜀"
+  description = "ALB 생성후 실행"
   type        = bool
   default     = false
+}
+
+variable "enable_cloudwatch" {
+  type    = bool
+  default = false
 }
