@@ -14,6 +14,11 @@ iam:
         namespace: kube-system
       wellKnownPolicies:
         awsLoadBalancerController: true
+    - metadata:
+        name: cluster-autoscaler
+        namespace: kube-system
+      wellKnownPolicies:
+        autoScaler: true
 
 vpc:
   id: "VPC_ID"
@@ -41,6 +46,10 @@ managedNodeGroups:
       - "PRIVATE_A"
       - "PRIVATE_C"
       - "PRIVATE_B"
+    tags:
+      k8s.io/cluster-autoscaler/enabled: "true"
+      k8s.io/cluster-autoscaler/apdev-eks-cluster: "owned"
+    propagateASGTags: true
 
 addons:
   - name: vpc-cni
