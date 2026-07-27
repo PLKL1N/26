@@ -10,7 +10,7 @@ variable "project" {
 
 variable "student_id" {
   type        = string
-  description = "비번호 입력"
+  description = "선수 비번호 (apply 시 직접 입력)"
 }
 
 variable "manage_topics" {
