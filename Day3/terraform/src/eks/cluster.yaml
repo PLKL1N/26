@@ -32,8 +32,8 @@ managedNodeGroups:
     instanceName: apdev-eks-node-instance
     instanceType: t3.medium
     amiFamily: AmazonLinux2023
-    desiredCapacity: 3
-    minSize: 3
+    desiredCapacity: 2
+    minSize: 2
     maxSize: 10
     volumeSize: 30
     privateNetworking: true

@@ -85,3 +85,13 @@ sed -i "s|DB_NAME|$DB_NAME|g" $K8S_DIR/*.yaml
 sed -i "s|S3_BUCKET_NAME|$S3_BUCKET_NAME|g" $K8S_DIR/*.yaml
 
 chown -R ec2-user:ec2-user $K8S_DIR
+
+NODE_ROLE=$(aws eks describe-nodegroup --cluster-name $EKS_CLUSTER_NAME \
+  --nodegroup-name apdev-eks-node --region $REGION_CODE \
+  --query 'nodegroup.nodeRole' --output text | awk -F/ '{print $NF}')
+
+aws iam attach-role-policy --role-name $NODE_ROLE \
+  --policy-arn arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+
+aws eks create-addon --cluster-name $EKS_CLUSTER_NAME \
+  --addon-name amazon-cloudwatch-observability --region $REGION_CODE
