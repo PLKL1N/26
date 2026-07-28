@@ -22,6 +22,22 @@ mirror() {
   docker push "${ECR}/$2:$3"
 }
 
+# --- pull-through 캐시 워밍 ---------------------------------------------------
+# 노드(managed nodegroup) 역할에는 pull-through 캐시 생성 권한
+# (ecr:CreateRepository / ecr:BatchImportUpstreamImage)이 없어서,
+# 노드가 ecr-public/* 이미지를 처음 pull하면 캐시 리포가 없어 NotFound로 실패한다.
+# bastion(권한 있음)이 먼저 pull해 캐시 리포를 생성해두면, 이후 노드는 read-only로 pull 가능.
+warm_pullthrough() {
+  for i in 1 2 3 4 5; do
+    docker pull "$1" && return 0
+    echo ">> warm_pullthrough retry $i for $1"; sleep 5
+  done
+  echo ">> WARNING: failed to warm $1"; return 0
+}
+warm_pullthrough "${ECR}/ecr-public/nginx/nginx:latest"
+warm_pullthrough "${ECR}/ecr-public/bitnami/kubectl:latest"
+# ----------------------------------------------------------------------------
+
 cat > /tmp/pi-trust.json <<JSON
 { "Version": "2012-10-17", "Statement": [ { "Effect": "Allow",
   "Principal": { "Service": "pods.eks.amazonaws.com" },
