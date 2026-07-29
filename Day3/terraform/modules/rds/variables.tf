@@ -75,3 +75,13 @@ variable "bastion_private_key" {
   type        = string
   sensitive   = true
 }
+
+variable "db_port" {
+  type    = number
+  default = 3306
+}
+
+variable "region" {
+  type    = string
+  default = "ap-northeast-2"
+}

@@ -36,3 +36,11 @@ output "secret_arn" {
 output "secret_name" {
   value = aws_secretsmanager_secret.rds.name
 }
+
+output "proxy_endpoint" {
+  value = aws_db_proxy.this.endpoint
+}
+
+output "proxy_port" {
+  value = 3306
+}

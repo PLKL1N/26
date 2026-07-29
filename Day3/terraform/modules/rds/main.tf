@@ -13,8 +13,8 @@ resource "aws_security_group" "rds" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 4000
-    to_port     = 4000
+    from_port   = 3306
+    to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
   }
@@ -44,7 +44,7 @@ resource "aws_db_instance" "this" {
   db_name  = var.db_name
   username = var.db_username
   password = var.db_password
-  port     = 4000
+  port     = 3306
 
   multi_az               = var.multi_az
   db_subnet_group_name   = aws_db_subnet_group.this.name

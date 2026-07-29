@@ -83,6 +83,8 @@ sed -i "s|DB_HOST|$DB_HOST|g" $K8S_DIR/*.yaml
 sed -i "s|DB_PORT|$DB_PORT|g" $K8S_DIR/*.yaml
 sed -i "s|DB_NAME|$DB_NAME|g" $K8S_DIR/*.yaml
 sed -i "s|S3_BUCKET_NAME|$S3_BUCKET_NAME|g" $K8S_DIR/*.yaml
+kubectl apply -f $K8S_DIR/ca-rbac.yaml
+kubectl apply -f $K8S_DIR/cluster-autoscaler.yaml
 
 chown -R ec2-user:ec2-user $K8S_DIR
 
