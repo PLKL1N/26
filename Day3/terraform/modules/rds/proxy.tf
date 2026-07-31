@@ -65,9 +65,10 @@ resource "aws_db_proxy" "this" {
   idle_client_timeout    = 1800
 
   auth {
-    auth_scheme = "SECRETS"
-    iam_auth    = "DISABLED"
-    secret_arn  = aws_secretsmanager_secret.rds.arn
+    auth_scheme               = "SECRETS"
+    iam_auth                  = "DISABLED"
+    secret_arn                = aws_secretsmanager_secret.rds.arn
+    client_password_auth_type = "MYSQL_NATIVE_PASSWORD"
   }
 
   depends_on = [aws_secretsmanager_secret_version.rds]

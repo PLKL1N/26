@@ -126,5 +126,10 @@ module "cloudwatch" {
   source = "./modules/cloudwatch"
 
   project        = var.project
+  region         = var.region
   alb_arn_suffix = data.aws_lb.app[0].arn_suffix
+  cluster_name   = var.cluster_name
+  namespace      = var.project
+
+  rds_id = "apdev-rds-instance"
 }

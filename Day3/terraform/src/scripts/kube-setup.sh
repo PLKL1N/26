@@ -69,8 +69,8 @@ SECRET_NAME=$(aws secretsmanager list-secrets --query "SecretList[?Name=='rds-se
 SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query "SecretString" --output text --region $REGION_CODE)
 DB_USER=$(echo $SECRET_JSON | jq -r ".username")
 DB_PASSWORD=$(echo $SECRET_JSON | jq -r ".password")
-DB_HOST=$(echo $SECRET_JSON | jq -r ".host")
-DB_PORT=$(echo $SECRET_JSON | jq -r ".port")
+DB_HOST=$(aws rds describe-db-proxies --db-proxy-name apdev-rds-proxy --region $REGION_CODE --query 'DBProxies[0].Endpoint' --output text)
+DB_PORT=3306
 DB_NAME=$(echo $SECRET_JSON | jq -r ".dbname")
 S3_BUCKET_NAME=$(aws s3api list-buckets --query "Buckets[?starts_with(Name, 'apdev-images')].Name" --output text)
 

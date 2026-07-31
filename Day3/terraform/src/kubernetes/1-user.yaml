@@ -24,10 +24,10 @@ spec:
             - containerPort: 8080
           resources:
             requests:
-              cpu: "100m"
+              cpu: "300m"
               memory: "128Mi"
             limits:
-              cpu: "500m"
+              cpu: "700m"
               memory: "256Mi"
           env:
             - name: MYSQL_USER
@@ -60,13 +60,17 @@ spec:
               path: /healthcheck
               port: 8080
             initialDelaySeconds: 5
-            periodSeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /healthcheck
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           lifecycle:
             preStop:
               exec:
@@ -97,11 +101,16 @@ spec:
     kind: Deployment
     name: user-deploy
   minReplicas: 2
-  maxReplicas: 6
+  maxReplicas: 4
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 50
+          averageUtilization: 60
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+    scaleDown:
+      stabilizationWindowSeconds: 120
