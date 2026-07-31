@@ -26,7 +26,8 @@ curl http://localhost:8080/healthcheck
 curl -w "\nHTTP:%{http_code}\n" -X POST http://localhost:8080/v1/user \
   -H "Content-Type: application/json" \
   -d '{"requestid":"1","uuid":"u-1","username":"testuser1","email":"testuser1@example.org"}'
-curl -w "\nHTTP:%{http_code}\n" "http://localhost:8080/v1/user?email=testuser1@example.org"
+curl -w "\nHTTP:%{http_code}\n" \
+  "http://localhost:8080/v1/user?email=testuser1@example.org&requestid=$(uuidgen)&uuid=$(uuidgen)"
 
 
 #==================================================================
