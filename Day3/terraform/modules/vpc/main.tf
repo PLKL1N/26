@@ -6,7 +6,7 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public" {
-  count                   = 3
+  count                   = 2
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = var.availability_zones[count.index]
@@ -18,7 +18,7 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  count             = 3
+  count             = 2
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = var.availability_zones[count.index]
@@ -28,16 +28,22 @@ resource "aws_subnet" "private" {
   }
 }
 
+resource "aws_subnet" "database" {
+  count             = 2
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.database_subnet_cidrs[count.index]
+  availability_zone = var.availability_zones[count.index]
+  tags =  {
+    Name = "${var.project}-db-sn-${substr(var.availability_zones[count.index], -1, 1)}"
+  }
+}
+
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
   tags   =  { Name = "${var.project}-igw" }
 }
 
 resource "aws_eip" "nat_a" {
-  domain = "vpc"
-}
-
-resource "aws_eip" "nat_b" {
   domain = "vpc"
 }
 
@@ -59,13 +65,6 @@ resource "aws_nat_gateway" "main_c" {
   depends_on    = [aws_internet_gateway.main]
 }
 
-resource "aws_nat_gateway" "main_b" {
-  allocation_id = aws_eip.nat_b.id
-  subnet_id     = aws_subnet.public[2].id
-  tags          =  { Name = "${var.project}-ngw-b" }
-  depends_on    = [aws_internet_gateway.main]
-}
-
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
   route {
@@ -76,7 +75,7 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "public" {
-  count          = 3
+  count          = 2
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
@@ -109,16 +108,13 @@ resource "aws_route_table_association" "private_c" {
   route_table_id = aws_route_table.private_c.id
 }
 
-resource "aws_route_table" "private_b" {
+resource "aws_route_table" "database" {
   vpc_id = aws_vpc.main.id
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main_b.id
-  }
-  tags =  { Name = "${var.project}-priv-rt-b" }
+  tags   = { Name = "${var.project}-db-rt" }
 }
 
-resource "aws_route_table_association" "private_b" {
-  subnet_id      = aws_subnet.private[2].id
-  route_table_id = aws_route_table.private_b.id
+resource "aws_route_table_association" "database" {
+  count          = 2
+  subnet_id      = aws_subnet.database[count.index].id
+  route_table_id = aws_route_table.database.id
 }

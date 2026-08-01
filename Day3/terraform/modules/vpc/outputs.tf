@@ -18,19 +18,24 @@ output "private_subnet_ids" {
   value = aws_subnet.private[*].id
 }
 
+output "database_subnet_ids" {
+  description = "Database Subnet ID List"
+  value = aws_subnet.database[*].id
+}
+
 output "internet_gateway_id" {
   description = "Internet Gateway ID"
   value = aws_internet_gateway.main.id
 }
 
 output "nat_gateway_ids" {
-  description = "NAT Gateway IDs (A, B and C)"
-  value = [aws_nat_gateway.main_a.id, aws_nat_gateway.main_b.id, aws_nat_gateway.main_c.id]
+  description = "NAT Gateway IDs (A and C)"
+  value = [aws_nat_gateway.main_a.id, aws_nat_gateway.main_c.id]
 }
 
 output "nat_gateway_public_ips" {
   description = "NAT Gateway Public IPs"
-  value = [aws_eip.nat_a.public_ip, aws_eip.nat_b.public_ip, aws_eip.nat_c.public_ip]
+  value = [aws_eip.nat_a.public_ip, aws_eip.nat_c.public_ip]
 }
 
 output "public_route_table_id" {
@@ -40,7 +45,7 @@ output "public_route_table_id" {
 
 output "private_route_table_ids" {
   description = "Private Route Table IDs"
-  value       = [aws_route_table.private_a.id, aws_route_table.private_b.id, aws_route_table.private_c.id]
+  value       = [aws_route_table.private_a.id, aws_route_table.private_c.id]
 }
 
 output "bastion_sg_id" {

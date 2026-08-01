@@ -26,11 +26,9 @@ vpc:
     public:
       ap-northeast-2a: { id: "PUBLIC_A" }
       ap-northeast-2c: { id: "PUBLIC_C" }
-      ap-northeast-2b: { id: "PUBLIC_B" }
     private:
       ap-northeast-2a: { id: "PRIVATE_A" }
       ap-northeast-2c: { id: "PRIVATE_C" }
-      ap-northeast-2b: { id: "PRIVATE_B" }
 
 managedNodeGroups:
   - name: apdev-eks-node
@@ -45,7 +43,6 @@ managedNodeGroups:
     subnets:
       - "PRIVATE_A"
       - "PRIVATE_C"
-      - "PRIVATE_B"
     tags:
       k8s.io/cluster-autoscaler/enabled: "true"
       k8s.io/cluster-autoscaler/apdev-eks-cluster: "owned"

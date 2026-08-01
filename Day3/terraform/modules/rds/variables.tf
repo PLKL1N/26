@@ -18,7 +18,7 @@ variable "vpc_cidr" {
   type        = string
 }
 
-variable "private_subnet_ids" {
+variable "db_subnet_ids" {
   description = "DB Subnet Group에 사용할 프라이빗 서브넷 ID 목록 (서로 다른 AZ, 2개 이상)"
   type        = list(string)
 }

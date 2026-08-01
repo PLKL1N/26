@@ -59,7 +59,7 @@ resource "aws_db_proxy" "this" {
   name                   = "${var.project}-rds-proxy"
   engine_family          = "MYSQL"
   role_arn               = aws_iam_role.proxy.arn
-  vpc_subnet_ids         = var.private_subnet_ids
+  vpc_subnet_ids         = var.db_subnet_ids
   vpc_security_group_ids = [aws_security_group.proxy.id]
   require_tls            = false
   idle_client_timeout    = 1800
