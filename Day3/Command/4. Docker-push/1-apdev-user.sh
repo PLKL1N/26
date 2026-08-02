@@ -42,5 +42,5 @@ mysql -h $DB_HOST -P $DB_PORT -u $DB_USER -p"$DB_PASSWORD" $DB_DBNAME \
 aws ecr get-login-password --region $REGION_CODE | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION_CODE.amazonaws.com
 USER_IMAGE=$(aws ecr describe-repositories --repository-names apdev-user --region $REGION_CODE --query 'repositories[0].repositoryUri' --output text)
-docker tag apdev-user:test $USER_IMAGE:latest
-docker push $USER_IMAGE:latest
+docker tag apdev-user:test $USER_IMAGE:v1
+docker push $USER_IMAGE:v1
