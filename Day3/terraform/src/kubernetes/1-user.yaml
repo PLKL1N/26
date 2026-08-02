@@ -18,16 +18,16 @@ spec:
 
       containers:
         - name: user
-          image: ACCOUNT_ID.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-user:latest
+          image: ACCOUNT_ID.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-user:v1
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:
             requests:
-              cpu: "300m"
+              cpu: "200m"
               memory: "128Mi"
             limits:
-              cpu: "700m"
+              cpu: "300m"
               memory: "256Mi"
           env:
             - name: MYSQL_USER
