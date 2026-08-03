@@ -19,7 +19,7 @@ spec:
       containers:
         - name: user
           image: ACCOUNT_ID.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-user:v1
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           resources:
