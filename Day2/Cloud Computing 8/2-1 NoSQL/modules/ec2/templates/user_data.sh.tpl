@@ -6,6 +6,17 @@ dnf install -y python3-pip
 
 mkdir -p /opt/skills-nosql
 
+# Wait for the instance profile credentials to become available via IMDS.
+# Freshly-attached instance profiles can take several seconds to propagate,
+# which otherwise makes the first `aws s3 cp` fail with
+# "Unable to locate credentials" and (because of `set -e`) aborts the whole script.
+for i in $(seq 1 30); do
+  if aws sts get-caller-identity >/dev/null 2>&1; then
+    break
+  fi
+  sleep 5
+done
+
 aws s3 cp "s3://${app_bucket}/${docdb_client_object_key}" /opt/skills-nosql/docdb_client.py
 aws s3 cp "s3://${app_bucket}/${retail_dataset_object_key}" /opt/skills-nosql/retail_dataset.json
 
