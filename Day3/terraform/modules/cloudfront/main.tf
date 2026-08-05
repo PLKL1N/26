@@ -1,3 +1,69 @@
+# ============================================================
+# CloudFront 표준 액세스 로그 (v1) 저장용 S3 버킷
+# CloudFront v1 로깅은 로그 배달 계정에 ACL FULL_CONTROL을 줘야 하므로
+# BucketOwnerEnforced(ACL 비활성)가 아닌 BucketOwnerPreferred로 생성한다.
+# ============================================================
+data "aws_caller_identity" "current" {}
+data "aws_canonical_user_id" "current" {}
+
+resource "random_id" "log_suffix" {
+  byte_length = 4
+}
+
+resource "aws_s3_bucket" "cf_logs" {
+  bucket        = "${var.project}-cf-logs-${random_id.log_suffix.hex}"
+  force_destroy = true
+
+  tags = {
+    Name = "${var.project}-cf-logs"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "cf_logs" {
+  bucket = aws_s3_bucket.cf_logs.id
+  rule {
+    object_ownership = "BucketOwnerPreferred" # ACL 허용 (CF v1 로깅 요구사항)
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "cf_logs" {
+  bucket                  = aws_s3_bucket.cf_logs.id
+  block_public_acls       = false # 로그 배달 계정 canonical ACL 부여를 위해 false
+  ignore_public_acls      = false
+  block_public_policy     = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_acl" "cf_logs" {
+  depends_on = [
+    aws_s3_bucket_ownership_controls.cf_logs,
+    aws_s3_bucket_public_access_block.cf_logs,
+  ]
+  bucket = aws_s3_bucket.cf_logs.id
+
+  access_control_policy {
+    owner {
+      id = data.aws_canonical_user_id.current.id
+    }
+    # 버킷 소유자 FULL_CONTROL
+    grant {
+      grantee {
+        id   = data.aws_canonical_user_id.current.id
+        type = "CanonicalUser"
+      }
+      permission = "FULL_CONTROL"
+    }
+    # CloudFront 로그 배달 계정 (전 리전 공통 고정 canonical ID)
+    grant {
+      grantee {
+        id   = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
+        type = "CanonicalUser"
+      }
+      permission = "FULL_CONTROL"
+    }
+  }
+}
+
 resource "aws_cloudfront_origin_access_control" "s3" {
   name                              = "${var.project}-images-oac"
   origin_access_control_origin_type = "s3"
@@ -49,6 +115,8 @@ resource "aws_cloudfront_response_headers_policy" "images_download" {
 }
 
 resource "aws_cloudfront_distribution" "this" {
+  depends_on = [aws_s3_bucket_acl.cf_logs]
+
   enabled     = true
   comment     = "${var.project} unified endpoint (API + static images)"
   price_class = var.price_class
@@ -108,6 +176,12 @@ resource "aws_cloudfront_distribution" "this" {
       event_type   = "viewer-request"
       function_arn = aws_cloudfront_function.rewrite_images.arn
     }
+  }
+
+  logging_config {
+    bucket          = aws_s3_bucket.cf_logs.bucket_domain_name
+    prefix          = "cloudfront/"
+    include_cookies = false
   }
 
   restrictions {

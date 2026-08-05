@@ -14,3 +14,8 @@ output "distribution_id" {
 output "distribution_arn" {
   value = aws_cloudfront_distribution.this.arn
 }
+
+output "log_bucket" {
+  description = "CloudFront 액세스 로그가 쌓이는 S3 버킷 이름 (prefix: cloudfront/)"
+  value       = aws_s3_bucket.cf_logs.bucket
+}
