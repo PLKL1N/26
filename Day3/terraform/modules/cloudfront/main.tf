@@ -12,6 +12,42 @@ resource "aws_cloudfront_function" "rewrite_images" {
   code    = file("${path.module}/functions/rewrite_images.js")
 }
 
+resource "aws_cloudfront_cache_policy" "product_get" {
+  name        = "${var.project}-product-get"
+  min_ttl     = 1
+  default_ttl = 30
+  max_ttl     = 60
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    query_strings_config {
+      query_string_behavior = "whitelist"
+      query_strings {
+        items = ["id"]
+      }
+    }
+    headers_config {
+      header_behavior = "none"
+    }
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    enable_accept_encoding_gzip   = true
+    enable_accept_encoding_brotli = true
+  }
+}
+
+resource "aws_cloudfront_response_headers_policy" "images_download" {
+  name = "${var.project}-images-download"
+
+  custom_headers_config {
+    items {
+      header   = "Content-Disposition"
+      value    = "attachment"
+      override = true
+    }
+  }
+}
+
 resource "aws_cloudfront_distribution" "this" {
   enabled     = true
   comment     = "${var.project} unified endpoint (API + static images)"
@@ -29,7 +65,7 @@ resource "aws_cloudfront_distribution" "this" {
 
     custom_origin_config {
       http_port                = 80
-      https_port                = 443
+      https_port               = 443
       origin_protocol_policy   = var.alb_origin_protocol_policy
       origin_ssl_protocols     = ["TLSv1.2"]
       origin_read_timeout      = 30
@@ -48,13 +84,25 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   ordered_cache_behavior {
+    path_pattern           = "/v1/product"
+    target_origin_id       = "alb-api"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD"]
+
+    cache_policy_id          = aws_cloudfront_cache_policy.product_get.id
+    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+  }
+
+  ordered_cache_behavior {
     path_pattern           = "/images/*"
     target_origin_id       = "s3-images"
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
 
-    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.images_download.id
 
     function_association {
       event_type   = "viewer-request"
