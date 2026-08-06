@@ -1,6 +1,3 @@
-# EKS 클러스터 + book 애플리케이션 + 모니터링(Prometheus/Grafana/Fluent Bit) 배포.
-# bastion(SSH)에 파일을 업로드하고 원격으로 eksctl/kubectl/helm 을 실행한다.
-
 resource "null_resource" "bootstrap" {
   triggers = {
     bastion_id       = var.bastion_instance_id
