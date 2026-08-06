@@ -13,6 +13,11 @@ provider "aws" {
   region = var.region
 }
 
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
 # =========================== VPC ===========================
 
 module "vpc" {
@@ -115,10 +120,21 @@ module "cloudfront" {
   s3_bucket_id                   = module.s3.bucket_id
   s3_bucket_arn                  = module.s3.bucket_arn
   s3_bucket_regional_domain_name = module.s3.bucket_regional_domain_name
-
   alb_dns_name = data.aws_lb.app[0].dns_name
+
+  web_acl_arn = var.enable_cloudfront ? module.waf[0].web_acl_arn : ""
 }
 
+# =========================== WAF ===========================
+
+module "waf" {
+  count  = var.enable_cloudfront ? 1 : 0
+  source = "./modules/waf"
+
+  providers = { aws = aws.us_east_1 }
+
+  project = var.project
+}
 
 # =========================== CloudWatch ===========================
 
@@ -129,6 +145,7 @@ module "cloudwatch" {
   project        = var.project
   region         = var.region
   alb_arn_suffix = data.aws_lb.app[0].arn_suffix
+  cf_distribution_id = var.enable_cloudfront ? module.cloudfront[0].distribution_id : ""
   cluster_name   = var.cluster_name
   namespace      = var.project
 

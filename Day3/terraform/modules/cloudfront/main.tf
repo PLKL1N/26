@@ -1,8 +1,3 @@
-# ============================================================
-# CloudFront 표준 액세스 로그 (v1) 저장용 S3 버킷
-# CloudFront v1 로깅은 로그 배달 계정에 ACL FULL_CONTROL을 줘야 하므로
-# BucketOwnerEnforced(ACL 비활성)가 아닌 BucketOwnerPreferred로 생성한다.
-# ============================================================
 data "aws_caller_identity" "current" {}
 data "aws_canonical_user_id" "current" {}
 
@@ -81,8 +76,8 @@ resource "aws_cloudfront_function" "rewrite_images" {
 resource "aws_cloudfront_cache_policy" "product_get" {
   name        = "${var.project}-product-get"
   min_ttl     = 1
-  default_ttl = 30
-  max_ttl     = 60
+  max_ttl     = 86400
+  default_ttl = 3600
 
   parameters_in_cache_key_and_forwarded_to_origin {
     query_strings_config {
@@ -120,6 +115,8 @@ resource "aws_cloudfront_distribution" "this" {
   enabled     = true
   comment     = "${var.project} unified endpoint (API + static images)"
   price_class = var.price_class
+
+  web_acl_id = var.web_acl_arn != "" ? var.web_acl_arn : null
 
   origin {
     domain_name              = var.s3_bucket_regional_domain_name

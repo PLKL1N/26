@@ -31,6 +31,22 @@ resource "aws_security_group" "rds" {
   }
 }
 
+resource "aws_db_parameter_group" "mysql80" {
+  name        = "${var.project}-mysql80-params"
+  family      = "mysql8.0"
+  description = "apdev custom - raise max_connections"
+
+  parameter {
+    name         = "max_connections"
+    value        = "150"
+    apply_method = "pending-reboot"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_db_instance" "this" {
   identifier     = var.db_identifier
   engine         = "mysql"
@@ -48,6 +64,7 @@ resource "aws_db_instance" "this" {
 
   multi_az               = var.multi_az
   db_subnet_group_name   = aws_db_subnet_group.this.name
+  parameter_group_name   = aws_db_parameter_group.mysql80.name
   vpc_security_group_ids = [aws_security_group.rds.id]
 
   backup_retention_period = 1
