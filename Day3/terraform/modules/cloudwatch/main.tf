@@ -25,6 +25,7 @@ resource "aws_cloudwatch_dashboard" "main" {
     cluster_name = var.cluster_name
     namespace    = var.namespace
     rds_id       = var.rds_id
+    cf_dist_id   = var.cf_distribution_id
     tg_user      = data.aws_lb_target_group.user.arn_suffix
     tg_product   = data.aws_lb_target_group.product.arn_suffix
     tg_stress    = data.aws_lb_target_group.stress.arn_suffix

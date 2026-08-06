@@ -33,3 +33,9 @@ variable "ingress_name" {
   type        = string
   default     = "app"
 }
+
+variable "cf_distribution_id" {
+  description = "CloudFront Distribution ID"
+  type        = string
+  default     = ""
+}
