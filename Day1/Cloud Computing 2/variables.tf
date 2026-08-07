@@ -23,7 +23,7 @@ variable "exam_number" {
 variable "grafana_admin_password" {
   description = "Grafana Password"
   type        = string
-  default     = "$korea26!!"
+  default     = "\\$korea26!!"
   sensitive   = true
 }
 

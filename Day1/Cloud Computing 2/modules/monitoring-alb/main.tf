@@ -1,4 +1,3 @@
-# 12. Monitoring : wskorea26-grafana-alb (Internet-facing, HTTP 80 -> Grafana)
 resource "aws_lb" "grafana" {
   name               = "wskorea26-grafana-alb"
   internal           = false

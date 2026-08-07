@@ -1,6 +1,5 @@
 data "aws_caller_identity" "current" {}
 
-# --------------------------- CMK: alias/wskorea26-s3-key ---------------------------
 data "aws_iam_policy_document" "s3_kms" {
   statement {
     sid       = "EnableRoot"
@@ -43,7 +42,6 @@ resource "aws_kms_alias" "s3" {
   target_key_id = aws_kms_key.s3.key_id
 }
 
-# --------------------------- Bucket: wskorea26-concert-bucket-<비번호> ---------------------------
 resource "aws_s3_bucket" "concert" {
   bucket = "${var.project}-concert-bucket-${var.exam_number}"
   tags   = { Name = "${var.project}-concert-bucket-${var.exam_number}" }
@@ -73,7 +71,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "concert" {
   }
 }
 
-# --------------------------- Objects : Object Path /web/main/ ---------------------------
 resource "aws_s3_object" "index" {
   bucket                 = aws_s3_bucket.concert.id
   key                    = "web/main/index.html"
@@ -96,5 +93,3 @@ resource "aws_s3_object" "main_image" {
   depends_on              = [aws_s3_bucket_server_side_encryption_configuration.concert]
 }
 
-# CloudFront(OAC) 전용 버킷 정책은 배포 ARN 이 필요하므로 루트 main.tf 에서
-# module.s3 / module.cloudfront 완료 후 별도 리소스로 부착한다 (순환참조 방지).

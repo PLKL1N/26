@@ -1,7 +1,3 @@
-# 10. Load Balancing : wskorea26-book-alb (Internet-facing, HTTP 80)
-#   - /book + POST + X-Origin-Verify:wskorea26-cf -> book app (EKS, NodePort, target_type=instance)
-#   - /book + GET  + X-Origin-Verify:wskorea26-cf -> wskorea26-book-lambda (target_type=lambda)
-#   - 그 외(CloudFront 를 거치지 않은 요청) -> 403 Forbidden (default action)
 
 resource "aws_lb" "book" {
   name               = "wskorea26-book-alb"
@@ -13,7 +9,6 @@ resource "aws_lb" "book" {
   tags = { Name = "wskorea26-book-alb" }
 }
 
-# --------------------------- Target Group : book app (EKS NodePort) ---------------------------
 resource "aws_lb_target_group" "book_app" {
   name        = "wskorea26-book-app-tg"
   port        = var.node_port
@@ -35,7 +30,6 @@ resource "aws_lb_target_group" "book_app" {
   tags = { Name = "wskorea26-book-app-tg" }
 }
 
-# --------------------------- Target Group : wskorea26-book-lambda ---------------------------
 resource "aws_lb_target_group" "lambda" {
   name        = "wskorea26-book-lambda-tg"
   target_type = "lambda"
@@ -57,13 +51,11 @@ resource "aws_lb_target_group_attachment" "lambda" {
   depends_on        = [aws_lambda_permission.alb]
 }
 
-# --------------------------- Listener : HTTP 80 ---------------------------
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.book.arn
   port                = 80
   protocol            = "HTTP"
 
-  # CloudFront 를 거치지 않은(=Custom Header 없는) 요청은 모두 403
   default_action {
     type = "fixed-response"
     fixed_response {
@@ -83,7 +75,6 @@ resource "aws_lb_listener_rule" "book_post" {
     target_group_arn = aws_lb_target_group.book_app.arn
   }
 
-  # CloudFront Function 이 POST /book -> /v1/book 으로 재작성해서 전달한다 (Reference02 app 경로).
   condition {
     path_pattern {
       values = ["/v1/book"]

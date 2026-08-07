@@ -7,7 +7,6 @@ variable "vpc_cidr" {
   default = "172.16.0.0/16"
 }
 
-# Reference01 그대로: c, d 서브넷 (AZ: ap-northeast-2c / 2d)
 variable "public_subnets" {
   type = map(object({
     cidr = string

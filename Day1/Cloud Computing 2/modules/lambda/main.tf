@@ -19,10 +19,6 @@ resource "aws_iam_role" "lambda" {
   assume_role_policy = data.aws_iam_policy_document.assume.json
 }
 
-# 9. Lambda Function : 최소 권한 원칙
-#   - wskorea26-data-table 의 GSI 조회(Query)만 허용
-#   - CMK(wskorea26-dynamodb-key) 복호화만 허용
-#   - 로그 전송 기본 권한만 허용
 data "aws_iam_policy_document" "policy" {
   statement {
     sid       = "QueryReservations"

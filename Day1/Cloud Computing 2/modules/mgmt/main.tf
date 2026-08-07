@@ -1,7 +1,3 @@
-# 자동화 작업용 bastion. wskorea26-vpc 의 public subnet 에 배치하여
-#   - 인터넷(IGW) 을 통해 eksctl/kubectl/helm/docker 설치 및 이미지 빌드/푸시
-#   - 같은 VPC 내부이므로 EKS Private API 엔드포인트에도 도달 가능
-# 채점 전 별도로 종료(destroy)하여 "불필요한 EC2" 감점을 피할 것을 권장.
 resource "aws_security_group" "bastion" {
   name        = "${var.project}-mgmt-bastion-sg"
   description = "Mgmt bastion (automation only)"

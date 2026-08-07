@@ -1,9 +1,3 @@
-# =========================================================================
-# 3. Network Configuration (Reference01)
-#   VPC: wskorea26-vpc (172.16.0.0/16)
-#   Public : wskorea26-pub-subnet-c / -d  -> wskorea26-public-rtb  -> book-igw
-#   Private: wskorea26-priv-subnet-c / -d -> wskorea26-private-rtb-c/d -> book-ngw-c/d
-# =========================================================================
 
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
@@ -13,13 +7,11 @@ resource "aws_vpc" "main" {
   tags = { Name = "${var.project}-vpc" }
 }
 
-# --------------------------- Internet Gateway ---------------------------
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
   tags   = { Name = "book-igw" }
 }
 
-# --------------------------- Public Subnets ---------------------------
 resource "aws_subnet" "public" {
   for_each = var.public_subnets
 
@@ -31,7 +23,6 @@ resource "aws_subnet" "public" {
   tags = { Name = "${var.project}-pub-subnet-${each.key}" }
 }
 
-# --------------------------- Private Subnets ---------------------------
 resource "aws_subnet" "private" {
   for_each = var.private_subnets
 
@@ -46,7 +37,6 @@ resource "aws_subnet" "private" {
   }
 }
 
-# --------------------------- NAT Gateways (book-ngw-c / book-ngw-d) ---------------------------
 resource "aws_eip" "nat" {
   for_each = var.private_subnets
   domain   = "vpc"
@@ -62,7 +52,6 @@ resource "aws_nat_gateway" "main" {
   depends_on = [aws_internet_gateway.main]
 }
 
-# --------------------------- Public Route Table (공용, 2개 서브넷 공유) ---------------------------
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
   tags   = { Name = "${var.project}-public-rtb" }
@@ -80,7 +69,6 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# --------------------------- Private Route Tables (AZ별 분리) ---------------------------
 resource "aws_route_table" "private" {
   for_each = var.private_subnets
   vpc_id   = aws_vpc.main.id

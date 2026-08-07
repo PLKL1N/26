@@ -1,5 +1,5 @@
 variable "vpc_id" { type = string }
-variable "private_subnet_ids" { type = map(string) } # {c=..., d=...}
+variable "private_subnet_ids" { type = map(string) }
 variable "eks_key_arn" { type = string }
 variable "node_extra_sg_id" { type = string }
 variable "vpc_environment_sg_id" { type = string }

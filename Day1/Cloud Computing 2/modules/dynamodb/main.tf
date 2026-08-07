@@ -1,6 +1,5 @@
 data "aws_caller_identity" "current" {}
 
-# --------------------------- CMK: alias/wskorea26-dynamodb-key ---------------------------
 data "aws_iam_policy_document" "db_key" {
   statement {
     sid       = "EnableRootPermissions"
@@ -50,9 +49,6 @@ resource "aws_kms_alias" "db" {
   target_key_id = aws_kms_key.db.key_id
 }
 
-# --------------------------- Table: wskorea26-data-table ---------------------------
-# Primary Key : client_id(S)
-# Lambda 의 concert_name 조회 + 최신순 정렬(created_at)을 DB 레벨에서 처리하기 위한 GSI
 resource "aws_dynamodb_table" "data" {
   name                        = var.table_name
   billing_mode                = "PAY_PER_REQUEST"
@@ -89,7 +85,6 @@ resource "aws_dynamodb_table" "data" {
   tags = { Name = var.table_name }
 }
 
-# --------------------------- IAM Policy : book 애플리케이션 쓰기 권한 ---------------------------
 data "aws_iam_policy_document" "book_write" {
   statement {
     sid    = "BookTableReadWrite"

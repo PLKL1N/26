@@ -1,6 +1,3 @@
-# 자동화용 bastion(mgmt) 인스턴스 역할.
-# eksctl/kubectl/docker/aws cli 로 전 구간을 자동 프로비저닝하기 위해 AdministratorAccess 사용.
-# (연습/구축용 리소스이며, 실채점 전 destroy 하거나 wskorea26-vpc 밖에서 운용할 것)
 resource "aws_iam_role" "bastion" {
   name = "${var.instance_name}-role"
 
