@@ -26,6 +26,12 @@ resource "aws_s3_bucket_public_access_block" "images" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_object" "images_folder" {
+  bucket       = aws_s3_bucket.images.id
+  key          = "images/"
+  content_type = "application/x-directory"
+}
+
 resource "aws_iam_policy" "product_s3_access" {
   name = "${var.project}-product-s3-access"
 

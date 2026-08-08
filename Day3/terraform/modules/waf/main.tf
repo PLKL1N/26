@@ -4,20 +4,46 @@ resource "aws_wafv2_web_acl" "this" {
   scope       = "CLOUDFRONT"
 
   default_action {
-    allow {}
+    block {
+      custom_response {
+        response_code = 403
+      }
+    }
+  }
+
+  custom_response_body {
+    key          = "not-found-404"
+    content      = jsonencode({ error = "not found" })
+    content_type = "APPLICATION_JSON"
   }
 
   rule {
-    name     = "block-abnormal-on-served-paths"
-    priority = 2
-
-    action {
-      block {}
+    name     = "aws-sqli"
+    priority = 0
+    override_action {
+      none {}
     }
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesSQLiRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${var.project}-sqli"
+      sampled_requests_enabled   = true
+    }
+  }
 
+  rule {
+    name     = "allow-valid-requests"
+    priority = 1
+    action {
+      allow {}
+    }
     statement {
       and_statement {
-
         statement {
           or_statement {
             dynamic "statement" {
@@ -38,35 +64,106 @@ resource "aws_wafv2_web_acl" "this" {
             }
           }
         }
-
         statement {
-          not_statement {
+          or_statement {
             statement {
-              and_statement {
-                statement {
-                  byte_match_statement {
-                    search_string         = "requestid="
-                    positional_constraint = "CONTAINS"
-                    field_to_match {
-                      query_string {}
-                    }
-                    text_transformation {
-                      priority = 0
-                      type     = "LOWERCASE"
-                    }
+              byte_match_statement {
+                search_string         = "requestid"
+                positional_constraint = "CONTAINS"
+                field_to_match {
+                  query_string {}
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "LOWERCASE"
+                }
+              }
+            }
+            statement {
+              byte_match_statement {
+                search_string         = "requestid"
+                positional_constraint = "CONTAINS"
+                field_to_match {
+                  body {
+                    oversize_handling = "MATCH"
                   }
                 }
-                statement {
-                  byte_match_statement {
-                    search_string         = "uuid="
-                    positional_constraint = "CONTAINS"
-                    field_to_match {
-                      query_string {}
-                    }
-                    text_transformation {
-                      priority = 0
-                      type     = "LOWERCASE"
-                    }
+                text_transformation {
+                  priority = 0
+                  type     = "LOWERCASE"
+                }
+              }
+            }
+          }
+        }
+        statement {
+          or_statement {
+            statement {
+              byte_match_statement {
+                search_string         = "uuid"
+                positional_constraint = "CONTAINS"
+                field_to_match {
+                  query_string {}
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "LOWERCASE"
+                }
+              }
+            }
+            statement {
+              byte_match_statement {
+                search_string         = "uuid"
+                positional_constraint = "CONTAINS"
+                field_to_match {
+                  body {
+                    oversize_handling = "MATCH"
+                  }
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "LOWERCASE"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${var.project}-allow-valid"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "not-served-404"
+    priority = 2
+    action {
+      block {
+        custom_response {
+          response_code            = 404
+          custom_response_body_key = "not-found-404"
+        }
+      }
+    }
+    statement {
+      not_statement {
+        statement {
+          or_statement {
+            dynamic "statement" {
+              for_each = var.served_path_prefixes
+              content {
+                byte_match_statement {
+                  search_string         = statement.value
+                  positional_constraint = "STARTS_WITH"
+                  field_to_match {
+                    uri_path {}
+                  }
+                  text_transformation {
+                    priority = 0
+                    type     = "NONE"
                   }
                 }
               }
@@ -75,36 +172,10 @@ resource "aws_wafv2_web_acl" "this" {
         }
       }
     }
-
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "${var.project}-block-abnormal"
+      metric_name                = "${var.project}-not-served-404"
       sampled_requests_enabled   = true
-    }
-  }
-
-  dynamic "rule" {
-    for_each = var.enable_managed_rules ? var.managed_rule_groups : []
-    content {
-      name     = "aws-${rule.value}"
-      priority = 10 + index(var.managed_rule_groups, rule.value)
-
-      override_action {
-        count {}
-      }
-
-      statement {
-        managed_rule_group_statement {
-          name        = rule.value
-          vendor_name = "AWS"
-        }
-      }
-
-      visibility_config {
-        cloudwatch_metrics_enabled = true
-        metric_name                = "${var.project}-${rule.value}"
-        sampled_requests_enabled   = true
-      }
     }
   }
 
