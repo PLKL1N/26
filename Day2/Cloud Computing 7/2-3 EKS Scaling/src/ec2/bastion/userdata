@@ -312,13 +312,23 @@ chown -R ec2-user:ec2-user /home/ec2-user/src
       dos2unix /home/ec2-user/scripts/*
   fi
 
-  eksctl create cluster -f /home/ec2-user/eks/cluster.yaml
+if ! eksctl create cluster -f /home/ec2-user/eks/cluster.yaml; then
+  echo "FATAL: eksctl create cluster failed"
+  exit 1
+fi
 
-  aws eks update-kubeconfig --region "$REGION_CODE" --name "skm-eks-cluster"
-  export KUBECONFIG=/root/.kube/config
-  mkdir -p /home/ec2-user/.kube
-  cp /root/.kube/config /home/ec2-user/.kube/config
-  chown -R ec2-user:ec2-user /home/ec2-user/.kube
+aws eks update-kubeconfig --region "$REGION_CODE" --name "skm-eks-cluster"
+export KUBECONFIG=/root/.kube/config
+
+until [ "$(kubectl get pods -n kube-system -l app.kubernetes.io/name=karpenter \
+-o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' | wc -w)" -ge 1 ]; do
+    sleep 5
+done
+
+
+mkdir -p /home/ec2-user/.kube
+cp /root/.kube/config /home/ec2-user/.kube/config
+chown -R ec2-user:ec2-user /home/ec2-user/.kube
 
   AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
   REPO_NAME="skm-ecr"
