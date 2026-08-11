@@ -108,7 +108,7 @@ spec:
     kind: Deployment
     name: product-deploy
   minReplicas: 2
-  maxReplicas: 3
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
