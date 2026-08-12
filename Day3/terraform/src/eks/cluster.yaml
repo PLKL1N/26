@@ -51,5 +51,13 @@ managedNodeGroups:
 addons:
   - name: vpc-cni
   - name: coredns
+    configurationValues: |-
+      resources:
+        requests:
+          cpu: 50m   
   - name: kube-proxy
   - name: metrics-server
+    configurationValues: |-
+      resources:
+        requests:
+          cpu: 50m
