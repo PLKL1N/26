@@ -16,7 +16,7 @@ PUBLIC_C_SN_ID=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=$PUBLI
 PRIVATE_A_SN_ID=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=$PRIVATE_A_SN_NAME" --query "Subnets[].SubnetId[]" --output text --region $REGION_CODE)
 PRIVATE_C_SN_ID=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=$PRIVATE_C_SN_NAME" --query "Subnets[].SubnetId[]" --output text --region $REGION_CODE)
 
-CLUSTER_YAML_PATH=$(sudo find / -name "cluster.yaml" 2> /dev/null)
+CLUSTER_YAML_PATH="/home/ec2-user/eks/cluster.yaml"
 
 sed -i "s|VPC_ID|$VPC_ID|g" $CLUSTER_YAML_PATH
 sed -i "s|ACCOUNT_ID|$ACCOUNT_ID|g" $CLUSTER_YAML_PATH

@@ -37,7 +37,7 @@ resource "aws_wafv2_web_acl" "this" {
   }
 
   rule {
-    name     = "allow-valid-requests"
+    name     = "allow-images"
     priority = 1
     action {
       allow {}
@@ -45,22 +45,73 @@ resource "aws_wafv2_web_acl" "this" {
     statement {
       and_statement {
         statement {
+          regex_match_statement {
+            regex_string = "^(${join("|", var.public_path_prefixes)})"
+            field_to_match {
+              uri_path {}
+            }
+            text_transformation {
+              priority = 0
+              type     = "NONE"
+            }
+          }
+        }
+        statement {
           or_statement {
-            dynamic "statement" {
-              for_each = var.served_path_prefixes
-              content {
-                byte_match_statement {
-                  search_string         = statement.value
-                  positional_constraint = "STARTS_WITH"
-                  field_to_match {
-                    uri_path {}
-                  }
-                  text_transformation {
-                    priority = 0
-                    type     = "NONE"
-                  }
+            statement {
+              byte_match_statement {
+                search_string         = "GET"
+                positional_constraint = "EXACTLY"
+                field_to_match {
+                  method {}
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "NONE"
                 }
               }
+            }
+            statement {
+              byte_match_statement {
+                search_string         = "HEAD"
+                positional_constraint = "EXACTLY"
+                field_to_match {
+                  method {}
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "NONE"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${var.project}-allow-images"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "allow-valid-requests"
+    priority = 2
+    action {
+      allow {}
+    }
+    statement {
+      and_statement {
+        statement {
+          regex_match_statement {
+            regex_string = "^(${join("|", var.served_path_prefixes)})"
+            field_to_match {
+              uri_path {}
+            }
+            text_transformation {
+              priority = 0
+              type     = "NONE"
             }
           }
         }
@@ -139,7 +190,7 @@ resource "aws_wafv2_web_acl" "this" {
 
   rule {
     name     = "not-served-404"
-    priority = 2
+    priority = 3
     action {
       block {
         custom_response {
@@ -151,22 +202,14 @@ resource "aws_wafv2_web_acl" "this" {
     statement {
       not_statement {
         statement {
-          or_statement {
-            dynamic "statement" {
-              for_each = var.served_path_prefixes
-              content {
-                byte_match_statement {
-                  search_string         = statement.value
-                  positional_constraint = "STARTS_WITH"
-                  field_to_match {
-                    uri_path {}
-                  }
-                  text_transformation {
-                    priority = 0
-                    type     = "NONE"
-                  }
-                }
-              }
+          regex_match_statement {
+            regex_string = "^(${join("|", concat(var.served_path_prefixes, var.public_path_prefixes))})"
+            field_to_match {
+              uri_path {}
+            }
+            text_transformation {
+              priority = 0
+              type     = "NONE"
             }
           }
         }

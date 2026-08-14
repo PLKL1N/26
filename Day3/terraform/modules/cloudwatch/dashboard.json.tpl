@@ -2,35 +2,70 @@
     "widgets": [
         {
             "type": "metric",
-            "x": 9,
-            "y": 0,
-            "width": 6,
+            "x": 0,
+            "y": 5,
+            "width": 14,
             "height": 5,
             "properties": {
+                "metrics": [
+                    [ "AWS/ApplicationELB", "RequestCount", "TargetGroup", "${tg_user}", "LoadBalancer", "${alb_id}", { "label": "user", "color": "#1f77b4", "region": "${region}" } ],
+                    [ "...", "${tg_product}", ".", ".", { "label": "product", "color": "#ff7f0e", "region": "${region}" } ],
+                    [ "...", "${tg_stress}", ".", ".", { "label": "stress", "color": "#2ca02c", "region": "${region}" } ],
+                    [ ".", ".", "LoadBalancer", "${alb_id}", { "label": "Totality", "color": "#9467bd", "region": "${region}" } ]
+                ],
                 "title": "ALB 요청수",
                 "region": "${region}",
                 "stat": "Sum",
                 "period": 60,
-                "view": "timeSeries",
+                "view": "gauge",
                 "stacked": false,
                 "yAxis": {
                     "left": {
                         "min": 0,
-                        "label": "requests/min"
+                        "max": 100000
                     }
                 },
-                "metrics": [
-                    [ "AWS/ApplicationELB", "RequestCount", "TargetGroup", "${tg_user}", "LoadBalancer", "${alb_id}", { "label": "user", "color": "#1f77b4" } ],
-                    [ "AWS/ApplicationELB", "RequestCount", "TargetGroup", "${tg_product}", "LoadBalancer", "${alb_id}", { "label": "product", "color": "#ff7f0e" } ],
-                    [ "AWS/ApplicationELB", "RequestCount", "TargetGroup", "${tg_stress}", "LoadBalancer", "${alb_id}", { "label": "stress", "color": "#2ca02c" } ]
-                ]
+                "annotations": {
+                    "horizontal": [
+                        [
+                            {
+                                "label": "여유",
+                                "value": 0,
+                                "color": "#2ca02c"
+                            },
+                            {
+                                "value": 50000
+                            }
+                        ],
+                        [
+                            {
+                                "label": "주의",
+                                "value": 50000,
+                                "color": "#ff9900"
+                            },
+                            {
+                                "value": 80000
+                            }
+                        ],
+                        [
+                            {
+                                "label": "포화",
+                                "value": 80000,
+                                "color": "#d62728"
+                            },
+                            {
+                                "value": 100000
+                            }
+                        ]
+                    ]
+                }
             }
         },
         {
             "type": "metric",
-            "x": 0,
-            "y": 5,
-            "width": 5,
+            "x": 18,
+            "y": 0,
+            "width": 6,
             "height": 5,
             "properties": {
                 "title": "ALB 5xx / 4xx",
@@ -162,7 +197,7 @@
         },
         {
             "type": "metric",
-            "x": 9,
+            "x": 0,
             "y": 10,
             "width": 6,
             "height": 5,
@@ -219,9 +254,9 @@
         },
         {
             "type": "metric",
-            "x": 7,
-            "y": 15,
-            "width": 10,
+            "x": 6,
+            "y": 10,
+            "width": 12,
             "height": 5,
             "properties": {
                 "title": "파드 개수",
@@ -279,8 +314,8 @@
         {
             "type": "metric",
             "x": 0,
-            "y": 10,
-            "width": 9,
+            "y": 15,
+            "width": 6,
             "height": 5,
             "properties": {
                 "title": "노드 CPU 사용률",
@@ -303,9 +338,9 @@
         },
         {
             "type": "metric",
-            "x": 15,
-            "y": 10,
-            "width": 9,
+            "x": 6,
+            "y": 15,
+            "width": 6,
             "height": 5,
             "properties": {
                 "title": "노드 메모리 사용률",
@@ -328,9 +363,9 @@
         },
         {
             "type": "metric",
-            "x": 0,
+            "x": 12,
             "y": 15,
-            "width": 7,
+            "width": 6,
             "height": 5,
             "properties": {
                 "title": "파드 CPU 사용률",
@@ -353,9 +388,9 @@
         },
         {
             "type": "metric",
-            "x": 17,
+            "x": 18,
             "y": 15,
-            "width": 7,
+            "width": 6,
             "height": 5,
             "properties": {
                 "title": "파드 메모리 사용률",
@@ -376,12 +411,12 @@
         },
         {
             "type": "metric",
-            "x": 15,
+            "x": 9,
             "y": 0,
             "width": 9,
             "height": 5,
             "properties": {
-                "title": "API 응답시간 SLO 달성률 (user/product <=0.2s, stress <=1.0s)",
+                "title": "API 응답시간 SLO 달성률",
                 "region": "${region}",
                 "period": 60,
                 "view": "gauge",
@@ -428,77 +463,17 @@
                     ]
                 },
                 "metrics": [
-                    [ "AWS/ApplicationELB", "TargetResponseTime", "TargetGroup", "${tg_user}", "LoadBalancer", "${alb_id}", { "stat": "PR(:0.2)", "label": "user (<=0.2s)", "color": "#1f77b4" } ],
-                    [ "AWS/ApplicationELB", "TargetResponseTime", "TargetGroup", "${tg_product}", "LoadBalancer", "${alb_id}", { "stat": "PR(:0.2)", "label": "product (<=0.2s)", "color": "#ff7f0e" } ],
-                    [ "AWS/ApplicationELB", "TargetResponseTime", "TargetGroup", "${tg_stress}", "LoadBalancer", "${alb_id}", { "stat": "PR(:1.0)", "label": "stress (<=1.0s)", "color": "#2ca02c" } ]
-                ]
-            }
-        }
-        %{ if cf_dist_id != "" }
-        ,{
-            "type": "metric",
-            "x": 10,
-            "y": 5,
-            "width": 4,
-            "height": 5,
-            "properties": {
-                "title": "CloudFront 캐시 히트율",
-                "region": "us-east-1",
-                "stat": "Average",
-                "period": 60,
-                "view": "gauge",
-                "stacked": false,
-                "yAxis": {
-                    "left": {
-                        "min": 0,
-                        "max": 100,
-                        "label": "%"
-                    }
-                },
-                "annotations": {
-                    "horizontal": [
-                        [
-                            {
-                                "label": "낮음",
-                                "value": 0,
-                                "color": "#d62728"
-                            },
-                            {
-                                "value": 50
-                            }
-                        ],
-                        [
-                            {
-                                "label": "주의",
-                                "value": 50,
-                                "color": "#ff9900"
-                            },
-                            {
-                                "value": 80
-                            }
-                        ],
-                        [
-                            {
-                                "label": "양호",
-                                "value": 80,
-                                "color": "#2ca02c"
-                            },
-                            {
-                                "value": 100
-                            }
-                        ]
-                    ]
-                },
-                "metrics": [
-                    [ "AWS/CloudFront", "CacheHitRate", "DistributionId", "${cf_dist_id}", "Region", "Global", { "label": "cache hit", "color": "#2ca02c" } ]
+                    [ "AWS/ApplicationELB", "TargetResponseTime", "TargetGroup", "${tg_user}", "LoadBalancer", "${alb_id}", { "stat": "PR(:0.2)", "label": "user (<=0.2s)", "color": "#1f77b4", "region": "${region}" } ],
+                    [ "...", "${tg_product}", ".", ".", { "stat": "PR(:0.2)", "label": "product (<=0.2s)", "color": "#ff7f0e", "region": "${region}" } ],
+                    [ "...", "${tg_stress}", ".", ".", { "stat": "PR(:1.0)", "label": "stress (<=1.0s)", "color": "#2ca02c", "region": "${region}" } ]
                 ]
             }
         },
         {
             "type": "metric",
-            "x": 5,
-            "y": 5,
-            "width": 5,
+            "x": 18,
+            "y": 10,
+            "width": 6,
             "height": 5,
             "properties": {
                 "title": "CloudFront 오리진 지연 (OriginLatency)",
@@ -519,6 +494,5 @@
                 ]
             }
         }
-        %{ endif ~}
     ]
 }

@@ -36,3 +36,9 @@ variable "log_retention_days" {
   type    = number
   default = 7
 }
+
+variable "public_path_prefixes" {
+  description = "인증 파라미터 없이 공개 제공되는 경로 (S3 이미지)"
+  type        = list(string)
+  default     = ["/images/", "/images"]
+}
