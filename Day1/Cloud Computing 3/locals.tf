@@ -552,7 +552,6 @@ locals {
       
       enable_objects    = true
       objects = [
-        { key = "static/static/", source = null, content_type = "application/x-directory" },
         { key = "static/index.html", source = "s3/index.html" },
         { key = "static/main.jpeg", source = "s3/main.jpeg" }
       ]

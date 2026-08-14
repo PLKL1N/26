@@ -13,19 +13,19 @@ data:
       "metadata": {
         "name": "wsc2026-grafana-dashboard",
         "namespace": "default",
-        "uid": "3bf4e6d2-a674-4f12-9546-4634d9d8c139",
-        "resourceVersion": "1782433188289994",
-        "generation": 5,
-        "creationTimestamp": "2026-06-25T16:25:25Z",
+        "uid": "0351bb8d-99d6-46e1-86f7-274b93aeffbd",
+        "resourceVersion": "1784994275531011",
+        "generation": 7,
+        "creationTimestamp": "2026-07-25T13:19:00Z",
         "labels": {
-          "grafana.app/deprecatedInternalID": "3029353212317696"
+          "grafana.app/deprecatedInternalID": "343275790692352"
         },
         "annotations": {
-          "grafana.app/createdBy": "user:cfq7t7qzhnda8f",
+          "grafana.app/createdBy": "user:aft6etx97s16oc",
           "grafana.app/folder": "",
-          "grafana.app/saved-from-ui": "Grafana v13.1.0 (b309c9bb3b)",
-          "grafana.app/updatedBy": "user:cfq7t7qzhnda8f",
-          "grafana.app/updatedTimestamp": "2026-06-26T00:19:48Z"
+          "grafana.app/saved-from-ui": "Grafana v13.1.1 (e784b7782a)",
+          "grafana.app/updatedBy": "user:aft6etx97s16oc",
+          "grafana.app/updatedTimestamp": "2026-07-25T15:44:35Z"
         }
       },
       "spec": {
@@ -72,7 +72,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -93,7 +93,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "timeseries",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "annotations": {
@@ -198,7 +198,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -218,7 +218,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "stat",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "colorMode": "value",
@@ -277,7 +277,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -298,7 +298,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "stat",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "colorMode": "value",
@@ -361,7 +361,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -381,7 +381,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "stat",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "colorMode": "value",
@@ -440,54 +440,25 @@ data:
                           "group": "cloudwatch",
                           "version": "v0",
                           "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
+                            "name": "P561CB7FAE9DC47C2"
                           },
                           "spec": {
                             "dimensions": {},
-                            "expression": "",
+                            "expression": "SELECT SUM(\"app/RequestCount\") FROM \"wsc2026-metrics\"",
                             "id": "m1",
                             "label": "",
-                            "logGroups": [
-                              {
-                                "accountId": "559050222006",
-                                "arn": "arn:aws:logs:ap-northeast-2:559050222006:log-group:/wsc2026/pod/log:*",
-                                "name": "/wsc2026/pod/log"
-                              }
-                            ],
-                            "logsMode": "Insights",
+                            "logGroups": [],
                             "matchExact": false,
                             "metricEditorMode": 1,
-                            "metricName": "app/RequestCount",
-                            "metricQueryType": 1,
-                            "namespace": "wsc2026-metrics",
+                            "metricName": "",
+                            "metricQueryType": 0,
+                            "namespace": "",
                             "period": "",
                             "queryLanguage": "CWLI",
                             "queryMode": "Metrics",
                             "region": "ap-northeast-2",
-                            "sql": {
-                              "from": {
-                                "property": {
-                                  "name": "wsc2026-metrics",
-                                  "type": "string"
-                                },
-                                "type": "property"
-                              },
-                              "select": {
-                                "name": "SUM",
-                                "parameters": [
-                                  {
-                                    "name": "app/RequestCount",
-                                    "type": "functionParameter"
-                                  }
-                                ],
-                                "type": "function"
-                              }
-                            },
-                            "sqlExpression": "SELECT SUM(\"app/RequestCount\") FROM \"wsc2026-metrics\"",
-                            "statistic": "Average",
-                            "statsGroups": [
-                              "bin($__interval)"
-                            ]
+                            "sqlExpression": "",
+                            "statistic": "Average"
                           }
                         },
                         "refId": "A",
@@ -502,30 +473,24 @@ data:
                           "group": "cloudwatch",
                           "version": "v0",
                           "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
+                            "name": "P561CB7FAE9DC47C2"
                           },
                           "spec": {
                             "dimensions": {},
-                            "expression": "",
+                            "expression": "FILL(m1, 0)",
                             "id": "",
                             "label": "Requests/min",
                             "logGroups": [],
                             "matchExact": false,
                             "metricEditorMode": 1,
                             "metricName": "",
-                            "metricQueryType": 1,
+                            "metricQueryType": 0,
                             "namespace": "",
                             "period": "",
                             "queryLanguage": "CWLI",
                             "queryMode": "Metrics",
                             "region": "default",
-                            "sql": {
-                              "select": {
-                                "name": "AVG",
-                                "type": "function"
-                              }
-                            },
-                            "sqlExpression": "FILL(m1, 0)",
+                            "sqlExpression": "",
                             "statistic": "Average"
                           }
                         },
@@ -541,7 +506,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "timeseries",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "annotations": {
@@ -639,12 +604,12 @@ data:
                           "group": "cloudwatch",
                           "version": "v0",
                           "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
+                            "name": "P561CB7FAE9DC47C2"
                           },
                           "spec": {
                             "dimensions": {},
-                            "expression": "filter @message like /\"duration\":/\n| parse @message '\"duration\":\"*ms\"' as duration\n| stats avg(replace(duration, \"ms\", \"\") + 0) as avg_durations by bin(1m)",
-                            "id": "m1",
+                            "expression": "fields @timestamp, duration, method, path, status\n| filter method = \"POST\" and path = \"/v1/book\"\n| parse duration /(?<duration_ms>[0-9.]+)ms/\n| stats avg(duration_ms) as avg_response_time_ms by bin(1m)",
+                            "id": "",
                             "label": "",
                             "logGroups": [
                               {
@@ -655,14 +620,14 @@ data:
                             ],
                             "matchExact": false,
                             "metricEditorMode": 1,
-                            "metricName": "",
-                            "metricQueryType": 1,
-                            "namespace": "AWS/ELB",
+                            "metricName": "wsc2026-metrics",
+                            "metricQueryType": 0,
+                            "namespace": "app/DurationCount",
                             "period": "",
                             "queryLanguage": "CWLI",
                             "queryMode": "Logs",
-                            "region": "default",
-                            "sqlExpression": "SELECT AVG(\"app/ResponseTime\") FROM \"wsc2026-metrics\"",
+                            "region": "ap-northeast-2",
+                            "sqlExpression": "",
                             "statistic": "Average",
                             "statsGroups": [
                               "bin(1m)"
@@ -681,7 +646,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "timeseries",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "annotations": {
@@ -704,7 +669,212 @@ data:
                   },
                   "fieldConfig": {
                     "defaults": {
+                      "displayName": "Avg Response Time",
                       "unit": "ms",
+                      "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                          {
+                            "value": 0,
+                            "color": "green"
+                          }
+                        ]
+                      },
+                      "color": {
+                        "mode": "palette-classic"
+                      },
+                      "noValue": "0",
+                      "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                          "legend": false,
+                          "tooltip": false,
+                          "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                          "type": "linear"
+                        },
+                        "showPoints": "always",
+                        "showValues": false,
+                        "spanNulls": true,
+                        "stacking": {
+                          "group": "A",
+                          "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                          "mode": "off"
+                        }
+                      }
+                    },
+                    "overrides": []
+                  }
+                }
+              }
+            }
+          },
+          "panel-15": {
+            "kind": "Panel",
+            "spec": {
+              "id": 15,
+              "title": "Status Codes",
+              "description": "",
+              "links": [],
+              "data": {
+                "kind": "QueryGroup",
+                "spec": {
+                  "queries": [
+                    {
+                      "kind": "PanelQuery",
+                      "spec": {
+                        "query": {
+                          "kind": "DataQuery",
+                          "group": "cloudwatch",
+                          "version": "v0",
+                          "datasource": {
+                            "name": "P561CB7FAE9DC47C2"
+                          },
+                          "spec": {
+                            "dimensions": {},
+                            "expression": "fields @timestamp, status, startsWith(status, \"2\") as is_2xx, startsWith(status, \"4\") as is_4xx, startsWith(status, \"5\") as is_5xx\n| filter ispresent(status)\n| stats sum(is_2xx) as `2XX`, sum(is_4xx) as `4XX`, sum(is_5xx) as `5XX` by bin(1m)",
+                            "id": "",
+                            "label": "",
+                            "logGroups": [
+                              {
+                                "accountId": "559050222006",
+                                "arn": "arn:aws:logs:ap-northeast-2:559050222006:log-group:/wsc2026/pod/log:*",
+                                "name": "/wsc2026/pod/log"
+                              }
+                            ],
+                            "matchExact": false,
+                            "metricEditorMode": 1,
+                            "metricName": "wsc2026-metrics",
+                            "metricQueryType": 0,
+                            "namespace": "app/StatusCount",
+                            "period": "",
+                            "queryLanguage": "CWLI",
+                            "queryMode": "Logs",
+                            "region": "ap-northeast-2",
+                            "sqlExpression": "",
+                            "statistic": "Sum",
+                            "statsGroups": [
+                              "bin(1m)"
+                            ]
+                          }
+                        },
+                        "refId": "A",
+                        "hidden": false
+                      }
+                    },
+                    {
+                      "kind": "PanelQuery",
+                      "spec": {
+                        "query": {
+                          "kind": "DataQuery",
+                          "group": "cloudwatch",
+                          "version": "v0",
+                          "datasource": {
+                            "name": "P561CB7FAE9DC47C2"
+                          },
+                          "spec": {
+                            "dimensions": {},
+                            "expression": "SELECT SUM(HTTPCode_ELB_4XX_Count)\r\nFROM SCHEMA(\"AWS/ApplicationELB\", LoadBalancer)\r\nWHERE LoadBalancer = 'app/wsc2026-app-alb/e5791df3957d485c'",
+                            "id": "",
+                            "label": "ELB 4XX",
+                            "logGroups": [],
+                            "matchExact": false,
+                            "metricEditorMode": 0,
+                            "metricName": "HTTPCode_ELB_4XX_Count",
+                            "metricQueryType": 0,
+                            "namespace": "AWS/ApplicationELB",
+                            "period": "",
+                            "queryLanguage": "CWLI",
+                            "queryMode": "Metrics",
+                            "region": "ap-northeast-2",
+                            "sqlExpression": "",
+                            "statistic": "Sum"
+                          }
+                        },
+                        "refId": "B",
+                        "hidden": false
+                      }
+                    },
+                    {
+                      "kind": "PanelQuery",
+                      "spec": {
+                        "query": {
+                          "kind": "DataQuery",
+                          "group": "cloudwatch",
+                          "version": "v0",
+                          "datasource": {
+                            "name": "P561CB7FAE9DC47C2"
+                          },
+                          "spec": {
+                            "dimensions": {},
+                            "expression": "SELECT SUM(HTTPCode_ELB_5XX_Count)\r\nFROM SCHEMA(\"AWS/ApplicationELB\", LoadBalancer)\r\nWHERE LoadBalancer = 'app/wsc2026-app-alb/e5791df3957d485c'",
+                            "id": "",
+                            "label": "ELB 5XX",
+                            "logGroups": [],
+                            "matchExact": false,
+                            "metricEditorMode": 0,
+                            "metricName": "HTTPCode_ELB_5XX_Count",
+                            "metricQueryType": 0,
+                            "namespace": "AWS/ApplicationELB",
+                            "period": "",
+                            "queryLanguage": "CWLI",
+                            "queryMode": "Metrics",
+                            "region": "ap-northeast-2",
+                            "sqlExpression": "",
+                            "statistic": "Sum"
+                          }
+                        },
+                        "refId": "C",
+                        "hidden": false
+                      }
+                    }
+                  ],
+                  "transformations": [],
+                  "queryOptions": {}
+                }
+              },
+              "vizConfig": {
+                "kind": "VizConfig",
+                "group": "timeseries",
+                "version": "13.1.1",
+                "spec": {
+                  "options": {
+                    "annotations": {
+                      "clustering": -1,
+                      "multiLane": false
+                    },
+                    "legend": {
+                      "calcs": [],
+                      "displayMode": "list",
+                      "enableFacetedFilter": false,
+                      "overflow": "ellipsis",
+                      "placement": "bottom",
+                      "showLegend": true
+                    },
+                    "tooltip": {
+                      "hideZeros": false,
+                      "mode": "single",
+                      "sort": "none"
+                    }
+                  },
+                  "fieldConfig": {
+                    "defaults": {
                       "thresholds": {
                         "mode": "absolute",
                         "steps": [
@@ -756,386 +926,79 @@ data:
                       {
                         "matcher": {
                           "id": "byName",
-                          "scope": "series",
-                          "options": "avg_durations"
+                          "options": "2XX"
                         },
                         "properties": [
                           {
-                            "id": "displayName",
-                            "value": "AVG Reponse Time"
+                            "id": "color",
+                            "value": {
+                              "fixedColor": "green",
+                              "mode": "fixed"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "matcher": {
+                          "id": "byName",
+                          "options": "4XX"
+                        },
+                        "properties": [
+                          {
+                            "id": "color",
+                            "value": {
+                              "fixedColor": "yellow",
+                              "mode": "fixed"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "matcher": {
+                          "id": "byName",
+                          "options": "5XX"
+                        },
+                        "properties": [
+                          {
+                            "id": "color",
+                            "value": {
+                              "fixedColor": "blue",
+                              "mode": "fixed"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "matcher": {
+                          "id": "byName",
+                          "options": "ELB 4XX"
+                        },
+                        "properties": [
+                          {
+                            "id": "color",
+                            "value": {
+                              "fixedColor": "orange",
+                              "mode": "fixed"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "matcher": {
+                          "id": "byName",
+                          "options": "ELB 5XX"
+                        },
+                        "properties": [
+                          {
+                            "id": "color",
+                            "value": {
+                              "fixedColor": "red",
+                              "mode": "fixed"
+                            }
                           }
                         ]
                       }
                     ]
-                  }
-                }
-              }
-            }
-          },
-          "panel-15": {
-            "kind": "Panel",
-            "spec": {
-              "id": 15,
-              "title": "Status Codes",
-              "description": "",
-              "links": [],
-              "data": {
-                "kind": "QueryGroup",
-                "spec": {
-                  "queries": [
-                    {
-                      "kind": "PanelQuery",
-                      "spec": {
-                        "query": {
-                          "kind": "DataQuery",
-                          "group": "cloudwatch",
-                          "version": "v0",
-                          "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
-                          },
-                          "spec": {
-                            "dimensions": {
-                              "StatusCode": "200"
-                            },
-                            "expression": "FILL(SUM(SEARCH('{wsc2026-metrics,StatusCode} MetricName=\"app/StatusCount\" StatusCode=\"2*\"', 'Sum', 60)), 0)",
-                            "id": "m2xx",
-                            "label": "",
-                            "logGroups": [],
-                            "matchExact": false,
-                            "metricEditorMode": 0,
-                            "metricName": "app/StatusCount",
-                            "metricQueryType": 0,
-                            "namespace": "wsc2026-metrics",
-                            "period": "",
-                            "queryLanguage": "CWLI",
-                            "queryMode": "Metrics",
-                            "region": "default",
-                            "sqlExpression": "",
-                            "statistic": "Sum"
-                          }
-                        },
-                        "refId": "A",
-                        "hidden": true
-                      }
-                    },
-                    {
-                      "kind": "PanelQuery",
-                      "spec": {
-                        "query": {
-                          "kind": "DataQuery",
-                          "group": "cloudwatch",
-                          "version": "v0",
-                          "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
-                          },
-                          "spec": {
-                            "dimensions": {
-                              "StatusCode": "404"
-                            },
-                            "expression": "FILL(SUM(SEARCH('{wsc2026-metrics,StatusCode} MetricName=\"app/StatusCount\" StatusCode=\"2*\"', 'Sum', 60)), 0)",
-                            "id": "m4xx",
-                            "label": "",
-                            "logGroups": [],
-                            "matchExact": false,
-                            "metricEditorMode": 0,
-                            "metricName": "app/StatusCount",
-                            "metricQueryType": 0,
-                            "namespace": "wsc2026-metrics",
-                            "period": "",
-                            "queryLanguage": "CWLI",
-                            "queryMode": "Metrics",
-                            "region": "default",
-                            "sqlExpression": "",
-                            "statistic": "Sum"
-                          }
-                        },
-                        "refId": "B",
-                        "hidden": true
-                      }
-                    },
-                    {
-                      "kind": "PanelQuery",
-                      "spec": {
-                        "query": {
-                          "kind": "DataQuery",
-                          "group": "cloudwatch",
-                          "version": "v0",
-                          "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
-                          },
-                          "spec": {
-                            "dimensions": {
-                              "StatusCode": "500"
-                            },
-                            "expression": "FILL(SUM(SEARCH('{wsc2026-metrics,StatusCode} MetricName=\"app/StatusCount\" StatusCode=\"2*\"', 'Sum', 60)), 0)",
-                            "id": "m5xx",
-                            "label": "",
-                            "logGroups": [],
-                            "matchExact": false,
-                            "metricEditorMode": 0,
-                            "metricName": "app/StatusCount",
-                            "metricQueryType": 0,
-                            "namespace": "wsc2026-metrics",
-                            "period": "",
-                            "queryLanguage": "CWLI",
-                            "queryMode": "Metrics",
-                            "region": "default",
-                            "sqlExpression": "",
-                            "statistic": "Sum"
-                          }
-                        },
-                        "refId": "C",
-                        "hidden": true
-                      }
-                    },
-                    {
-                      "kind": "PanelQuery",
-                      "spec": {
-                        "query": {
-                          "kind": "DataQuery",
-                          "group": "cloudwatch",
-                          "version": "v0",
-                          "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
-                          },
-                          "spec": {
-                            "dimensions": {},
-                            "expression": "FILL(m2xx, 0)",
-                            "id": "",
-                            "label": "2XX",
-                            "logGroups": [],
-                            "matchExact": false,
-                            "metricEditorMode": 1,
-                            "metricName": "",
-                            "metricQueryType": 0,
-                            "namespace": "",
-                            "period": "",
-                            "queryLanguage": "CWLI",
-                            "queryMode": "Metrics",
-                            "region": "default",
-                            "sqlExpression": "",
-                            "statistic": "Average"
-                          }
-                        },
-                        "refId": "D",
-                        "hidden": false
-                      }
-                    },
-                    {
-                      "kind": "PanelQuery",
-                      "spec": {
-                        "query": {
-                          "kind": "DataQuery",
-                          "group": "cloudwatch",
-                          "version": "v0",
-                          "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
-                          },
-                          "spec": {
-                            "dimensions": {},
-                            "expression": "FILL(m4xx, 0)",
-                            "id": "",
-                            "label": "4XX",
-                            "logGroups": [],
-                            "matchExact": false,
-                            "metricEditorMode": 1,
-                            "metricName": "",
-                            "metricQueryType": 0,
-                            "namespace": "",
-                            "period": "",
-                            "queryLanguage": "CWLI",
-                            "queryMode": "Metrics",
-                            "region": "default",
-                            "sqlExpression": "",
-                            "statistic": "Average"
-                          }
-                        },
-                        "refId": "E",
-                        "hidden": false
-                      }
-                    },
-                    {
-                      "kind": "PanelQuery",
-                      "spec": {
-                        "query": {
-                          "kind": "DataQuery",
-                          "group": "cloudwatch",
-                          "version": "v0",
-                          "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
-                          },
-                          "spec": {
-                            "dimensions": {},
-                            "expression": "FILL(m5xx, 0)",
-                            "id": "",
-                            "label": "5XX",
-                            "logGroups": [],
-                            "matchExact": false,
-                            "metricEditorMode": 1,
-                            "metricName": "",
-                            "metricQueryType": 0,
-                            "namespace": "",
-                            "period": "",
-                            "queryLanguage": "CWLI",
-                            "queryMode": "Metrics",
-                            "region": "default",
-                            "sqlExpression": "",
-                            "statistic": "Average"
-                          }
-                        },
-                        "refId": "F",
-                        "hidden": false
-                      }
-                    },
-                    {
-                      "kind": "PanelQuery",
-                      "spec": {
-                        "query": {
-                          "kind": "DataQuery",
-                          "group": "cloudwatch",
-                          "version": "v0",
-                          "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
-                          },
-                          "spec": {
-                            "dimensions": {},
-                            "expression": "",
-                            "id": "",
-                            "label": "ELB 4XX",
-                            "logGroups": [],
-                            "matchExact": false,
-                            "metricEditorMode": 0,
-                            "metricName": "HTTPCode_ELB_4XX",
-                            "metricQueryType": 0,
-                            "namespace": "AWS/ELB",
-                            "period": "",
-                            "queryLanguage": "CWLI",
-                            "queryMode": "Metrics",
-                            "region": "default",
-                            "sqlExpression": "",
-                            "statistic": "Sum"
-                          }
-                        },
-                        "refId": "G",
-                        "hidden": false
-                      }
-                    },
-                    {
-                      "kind": "PanelQuery",
-                      "spec": {
-                        "query": {
-                          "kind": "DataQuery",
-                          "group": "cloudwatch",
-                          "version": "v0",
-                          "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
-                          },
-                          "spec": {
-                            "dimensions": {},
-                            "expression": "",
-                            "id": "",
-                            "label": "ELB 5XX",
-                            "logGroups": [],
-                            "matchExact": false,
-                            "metricEditorMode": 0,
-                            "metricName": "HTTPCode_ELB_5XX",
-                            "metricQueryType": 0,
-                            "namespace": "AWS/ELB",
-                            "period": "",
-                            "queryLanguage": "CWLI",
-                            "queryMode": "Metrics",
-                            "region": "default",
-                            "sqlExpression": "",
-                            "statistic": "Sum"
-                          }
-                        },
-                        "refId": "H",
-                        "hidden": false
-                      }
-                    }
-                  ],
-                  "transformations": [],
-                  "queryOptions": {}
-                }
-              },
-              "vizConfig": {
-                "kind": "VizConfig",
-                "group": "timeseries",
-                "version": "13.1.0",
-                "spec": {
-                  "options": {
-                    "annotations": {
-                      "clustering": -1,
-                      "multiLane": false
-                    },
-                    "legend": {
-                      "calcs": [],
-                      "displayMode": "list",
-                      "enableFacetedFilter": false,
-                      "overflow": "ellipsis",
-                      "placement": "bottom",
-                      "showLegend": true
-                    },
-                    "tooltip": {
-                      "hideZeros": false,
-                      "mode": "single",
-                      "sort": "none"
-                    }
-                  },
-                  "fieldConfig": {
-                    "defaults": {
-                      "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                          {
-                            "value": 0,
-                            "color": "green"
-                          },
-                          {
-                            "value": 80,
-                            "color": "red"
-                          }
-                        ]
-                      },
-                      "color": {
-                        "mode": "palette-classic"
-                      },
-                      "custom": {
-                        "axisBorderShow": false,
-                        "axisCenteredZero": false,
-                        "axisColorMode": "text",
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "barAlignment": 0,
-                        "barWidthFactor": 0.6,
-                        "drawStyle": "line",
-                        "fillOpacity": 15,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                          "legend": false,
-                          "tooltip": false,
-                          "viz": false
-                        },
-                        "insertNulls": false,
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                          "type": "linear"
-                        },
-                        "showPoints": "auto",
-                        "showValues": false,
-                        "spanNulls": false,
-                        "stacking": {
-                          "group": "A",
-                          "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                          "mode": "off"
-                        }
-                      }
-                    },
-                    "overrides": []
                   }
                 }
               }
@@ -1160,11 +1023,11 @@ data:
                           "group": "cloudwatch",
                           "version": "v0",
                           "datasource": {
-                            "name": "P5372A6A9C0A7A0D6"
+                            "name": "P561CB7FAE9DC47C2"
                           },
                           "spec": {
                             "dimensions": {},
-                            "expression": "fields level, @message\r\n| sort @timestamp desc",
+                            "expression": "fields @timestamp, @message, level\n| sort @timestamp desc",
                             "id": "",
                             "label": "",
                             "logGroups": [
@@ -1175,7 +1038,7 @@ data:
                               }
                             ],
                             "matchExact": false,
-                            "metricEditorMode": 0,
+                            "metricEditorMode": 1,
                             "metricName": "",
                             "metricQueryType": 0,
                             "namespace": "",
@@ -1200,28 +1063,21 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "logs",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "dedupStrategy": "none",
-                    "detailsMode": "inline",
-                    "displayedFields": [
-                      "@message"
-                    ],
                     "enableInfiniteScrolling": false,
-                    "enableLogDetails": false,
-                    "fontSize": "default",
-                    "prettifyLogMessage": false,
+                    "enableLogDetails": true,
+                    "prettifyLogMessage": true,
                     "showControls": false,
                     "showFieldSelector": false,
-                    "showLabels": false,
                     "showLevel": true,
                     "showTime": false,
                     "sortOrder": "Descending",
-                    "syntaxHighlighting": false,
                     "timestampResolution": "ms",
                     "unwrappedColumns": false,
-                    "wrapLogMessage": true
+                    "wrapLogMessage": false
                   },
                   "fieldConfig": {
                     "defaults": {},
@@ -1249,7 +1105,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "alertlist",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "alertInstanceLabelFilter": "",
@@ -1314,7 +1170,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -1335,7 +1191,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "timeseries",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "annotations": {
@@ -1441,7 +1297,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -1462,7 +1318,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "stat",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "colorMode": "value",
@@ -1521,7 +1377,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -1542,7 +1398,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "timeseries",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "annotations": {
@@ -1647,7 +1503,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -1668,7 +1524,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "timeseries",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "annotations": {
@@ -1773,7 +1629,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -1794,7 +1650,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "stat",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "colorMode": "value",
@@ -1853,7 +1709,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -1874,7 +1730,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "stat",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "colorMode": "value",
@@ -1937,7 +1793,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -1958,7 +1814,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "timeseries",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "annotations": {
@@ -2057,7 +1913,7 @@ data:
                           "group": "prometheus",
                           "version": "v0",
                           "datasource": {
-                            "name": "PBFA97CFB590B2093"
+                            "name": "P1809F7CD0C75ACF3"
                           },
                           "spec": {
                             "editorMode": "code",
@@ -2078,7 +1934,7 @@ data:
               "vizConfig": {
                 "kind": "VizConfig",
                 "group": "timeseries",
-                "version": "13.1.0",
+                "version": "13.1.1",
                 "spec": {
                   "options": {
                     "annotations": {

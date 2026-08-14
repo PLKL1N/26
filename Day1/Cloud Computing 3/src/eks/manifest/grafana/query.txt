@@ -52,13 +52,29 @@ B Label: Requests/min
 
 ## App Response Time
 Query:
-filter @message like /"duration":/
-| parse @message '"duration":"*ms"' as duration
-| stats avg(replace(duration, "ms", "") + 0) as avg_durations by bin(1m)
+fields @timestamp, duration, method, path, status
+| filter method = "POST" and path = "/v1/book"
+| parse duration /(?<duration_ms>[0-9.]+)ms/
+| stats avg(duration_ms) as avg_response_time_ms by bin(1m)
 
 ## App Status Code
+Query:
+A:
+fields @timestamp, status, startsWith(status, "2") as is_2xx, startsWith(status, "4") as is_4xx, startsWith(status, "5") as is_5xx
+| filter ispresent(status)
+| stats sum(is_2xx) as `2XX`, sum(is_4xx) as `4XX`, sum(is_5xx) as `5XX` by bin(1m)
+
+B:
+Namespace: AWS/ApplicationELB
+Metrics Name: HTTPCode_ELB_4XX_Count
+Statistic: Sum
+
+C:
+Namespace: AWS/ApplicationELB
+Metrics Name: HTTPCode_ELB_5XX_Count
+Statistic: Sum
 
 ## App Application Logs
 Query: 
-fields level, @message
+fields @timestamp, @message, level
 | sort @timestamp desc
