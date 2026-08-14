@@ -23,11 +23,6 @@ terraform {
 }
 
 provider "aws" {
-  region  = var.seoul_region
-  profile = "default"
-}
-
-provider "aws" {
   alias = "ap_northeast_2"
   region = var.seoul_region
   profile = "default"

@@ -6,7 +6,6 @@ ALB_SECURITY_GROUP_NAME="unicorn-alb-sg"
 FLUENT_BIT_ROLE_NAME="unicorn-fluent-bit-role"
 DYNAMODB_ROLE_NAME="unicorn-book-app-role"
 LAMBDA_ROLE_NAME="unicorn-get-booking-func-role"
-PLAYER_NUMBER="${PLAYER_NUMBER:-$number}"
 
 CLUSTER_YAML_PATH=$(sudo find / -name "cluster.yaml" 2>/dev/null)
 FLUENT_BIT_ROLE_ARN=$(aws iam get-role --role-name $FLUENT_BIT_ROLE_NAME --query "Role.Arn" --output text --region $REGION_CODE)
@@ -25,8 +24,15 @@ kubectl create ns logging
 
 eksctl create addon --cluster $EKS_CLUSTER_NAME --name=eks-pod-identity-agent --region $REGION_CODE --force
 
-kubectl -n kube-system rollout status daemonset/eks-pod-identity-agent --timeout=180s
-sleep 15
+# addon이 ACTIVE 상태가 될 때까지 대기 (비동기 생성이라 바로 podidentityassociation을 만들면 agent가 노드에 아직 안 떠있을 수 있음)
+aws eks wait addon-active --cluster-name $EKS_CLUSTER_NAME --addon-name eks-pod-identity-agent --region $REGION_CODE
+
+# agent 데몬셋 파드가 실제 Running 상태가 될 때까지 대기
+kubectl -n kube-system rollout status daemonset/eks-pod-identity-agent --timeout=120s
+
+KMS_KEY_ALIASE_NAME="alias/unicorn-kms-platform"
+KMS_KEY_ARN=$(aws kms describe-key --key-id $KMS_KEY_ALIASE_NAME --query "KeyMetadata.Arn" --output text --region $REGION_CODE)
+aws iam put-role-policy --role-name $LAMBDA_ROLE_NAME --policy-name AllowKMSDecrypt --policy-document "{\"Version\": \"2012-10-17\",\"Statement\": [{\"Effect\": \"Allow\",\"Action\": \"kms:Decrypt\",\"Resource\": \"${KMS_KEY_ARN}\"}]}"
 
 eksctl create podidentityassociation \
   --region $REGION_CODE \
@@ -36,15 +42,12 @@ eksctl create podidentityassociation \
   --role-arn $FLUENT_BIT_ROLE_ARN \
   --create-service-account
 
-# Pod Identity 자격증명은 파드 생성 시점에 webhook이 주입하므로,
-# association 전파 전에 파드가 뜨면 자격증명 없이 실행되어 AccessDenied가 발생한다.
-# DaemonSet 적용 전 association이 완전히 전파되도록 대기한다.
-sleep 15
-
 kubectl apply -f /home/ec2-user/eks/manifest/logging/configmap.yaml
 kubectl apply -f /home/ec2-user/eks/manifest/logging/daemonset.yaml
 
-kubectl rollout status daemonset/fluent-bit -n logging --timeout=120s
+# fluent-bit가 association 생성 전에 이미 떠서 자격증명 획득에 실패했을 경우를 대비해 재시작으로 갱신
+kubectl -n logging rollout restart daemonset/fluent-bit 2>/dev/null || true
+kubectl -n logging rollout status daemonset/fluent-bit --timeout=120s 2>/dev/null || true
 
 eksctl create podidentityassociation \
   --region $REGION_CODE \
@@ -103,16 +106,20 @@ eksctl create addon \
 
 sleep 10
 
-kubectl apply -f /home/ec2-user/eks/manifest/grafana/configmap.yaml
-
-sed -i "s|PLAYER_NUMBER|$PLAYER_NUMBER|g" /home/ec2-user/eks/manifest/prometheus/kube-prometheus-stack-values.yaml
-
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-helm upgrade -i unicorn-monitoring prometheus-community/kube-prometheus-stack \
+helm upgrade -i prometheus prometheus-community/prometheus \
   -n monitoring \
-  -f /home/ec2-user/eks/manifest/prometheus/kube-prometheus-stack-values.yaml
+  -f /home/ec2-user/eks/manifest/prometheus/values.yaml
 
 sleep 30
+
+kubectl apply -f /home/ec2-user/eks/manifest/grafana/configmap.yaml
+
+helm repo add grafana-community https://grafana-community.github.io/helm-charts
+helm repo update
+helm upgrade -i grafana grafana-community/grafana \
+  -n monitoring \
+  -f /home/ec2-user/eks/manifest/grafana/values.yaml
 
 kubectl apply -f /home/ec2-user/eks/manifest/grafana/ingress.yaml
