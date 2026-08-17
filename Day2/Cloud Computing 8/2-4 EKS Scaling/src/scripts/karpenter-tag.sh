@@ -1,6 +1,6 @@
 #!/bin/bash
+set -o pipefail
 REGION_CODE="us-west-2"
-EKS_CLUSTER_NAME="skills-sqs-cluster"
 EKS_CLUSTER_NAME="skills-sqs-cluster"
 PUBLIC_A_SN_NAME="skills-sqs-public-a"
 PUBLIC_C_SN_NAME="skills-sqs-public-c"
