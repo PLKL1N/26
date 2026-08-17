@@ -24,12 +24,6 @@ kubectl create ns logging
 
 eksctl create addon --cluster $EKS_CLUSTER_NAME --name=eks-pod-identity-agent --region $REGION_CODE --force
 
-# addon이 ACTIVE 상태가 될 때까지 대기 (비동기 생성이라 바로 podidentityassociation을 만들면 agent가 노드에 아직 안 떠있을 수 있음)
-aws eks wait addon-active --cluster-name $EKS_CLUSTER_NAME --addon-name eks-pod-identity-agent --region $REGION_CODE
-
-# agent 데몬셋 파드가 실제 Running 상태가 될 때까지 대기
-kubectl -n kube-system rollout status daemonset/eks-pod-identity-agent --timeout=120s
-
 KMS_KEY_ALIASE_NAME="alias/unicorn-kms-platform"
 KMS_KEY_ARN=$(aws kms describe-key --key-id $KMS_KEY_ALIASE_NAME --query "KeyMetadata.Arn" --output text --region $REGION_CODE)
 aws iam put-role-policy --role-name $LAMBDA_ROLE_NAME --policy-name AllowKMSDecrypt --policy-document "{\"Version\": \"2012-10-17\",\"Statement\": [{\"Effect\": \"Allow\",\"Action\": \"kms:Decrypt\",\"Resource\": \"${KMS_KEY_ARN}\"}]}"
@@ -44,10 +38,6 @@ eksctl create podidentityassociation \
 
 kubectl apply -f /home/ec2-user/eks/manifest/logging/configmap.yaml
 kubectl apply -f /home/ec2-user/eks/manifest/logging/daemonset.yaml
-
-# fluent-bit가 association 생성 전에 이미 떠서 자격증명 획득에 실패했을 경우를 대비해 재시작으로 갱신
-kubectl -n logging rollout restart daemonset/fluent-bit 2>/dev/null || true
-kubectl -n logging rollout status daemonset/fluent-bit --timeout=120s 2>/dev/null || true
 
 eksctl create podidentityassociation \
   --region $REGION_CODE \
