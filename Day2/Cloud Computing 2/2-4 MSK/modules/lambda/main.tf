@@ -125,6 +125,18 @@ resource "aws_iam_role_policy" "lambda_data_access" {
   })
 }
 
+# IAM은 최종 일관성 서비스라 역할/정책 생성 직후 Lambda API가 권한을 못 볼 수 있다.
+# (CreateNetworkInterface / DescribeClusterV2 권한 없음 오류의 원인)
+resource "time_sleep" "iam_propagation" {
+  depends_on = [
+    aws_iam_role_policy_attachment.vpc_access,
+    aws_iam_role_policy.lambda_msk_access,
+    aws_iam_role_policy.lambda_data_access,
+  ]
+
+  create_duration = "45s"
+}
+
 resource "aws_lambda_function" "sensor_consumer" {
   function_name = "${var.project}-sensor-consumer"
   role          = aws_iam_role.lambda_role.arn
@@ -152,6 +164,8 @@ resource "aws_lambda_function" "sensor_consumer" {
   tags = {
     Name = "${var.project}-sensor-consumer"
   }
+
+  depends_on = [time_sleep.iam_propagation]
 }
 
 resource "aws_lambda_function" "alert_consumer" {
@@ -180,6 +194,8 @@ resource "aws_lambda_function" "alert_consumer" {
   tags = {
     Name = "${var.project}-sensor-alert-consumer"
   }
+
+  depends_on = [time_sleep.iam_propagation]
 }
 
 resource "aws_lambda_event_source_mapping" "sensor_raw" {
@@ -193,6 +209,8 @@ resource "aws_lambda_event_source_mapping" "sensor_raw" {
   amazon_managed_kafka_event_source_config {
     consumer_group_id = "${var.project}-sensor-consumer-group"
   }
+
+  depends_on = [time_sleep.iam_propagation]
 }
 
 resource "aws_lambda_event_source_mapping" "sensor_alert" {
@@ -206,4 +224,6 @@ resource "aws_lambda_event_source_mapping" "sensor_alert" {
   amazon_managed_kafka_event_source_config {
     consumer_group_id = "${var.project}-sensor-alert-consumer-group"
   }
+
+  depends_on = [time_sleep.iam_propagation]
 }

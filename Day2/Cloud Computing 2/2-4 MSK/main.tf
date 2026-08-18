@@ -13,6 +13,10 @@ terraform {
       source  = "hashicorp/local"
       version = ">= 2.4.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.9.0"
+    }
   }
 }
 
@@ -50,6 +54,7 @@ module "vpc_endpoints" {
   project            = var.project
   region             = var.region
   vpc_id             = module.vpc.vpc_id
+  vpc_cidr           = var.vpc_cidr
   private_subnet_ids = module.vpc.private_subnet_ids
   msk_sg_id          = module.security_groups.msk_sg_id
 }

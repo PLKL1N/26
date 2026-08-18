@@ -84,10 +84,10 @@ resource "aws_security_group_rule" "msk_from_lambda" {
 # configured VPC security group. It therefore needs the MSK SG to allow itself.
 resource "aws_security_group_rule" "msk_self_9098" {
   type                     = "ingress"
-  from_port                = 9098
+  from_port                = 9092
   to_port                  = 9098
   protocol                 = "tcp"
   security_group_id        = aws_security_group.msk.id
   source_security_group_id = aws_security_group.msk.id
-  description               = "Self-reference required by MSK Lambda event source mapping"
+  description               = "Self-reference required by MSK Lambda event source mapping (9092 plaintext / 9094 TLS / 9098 IAM)"
 }

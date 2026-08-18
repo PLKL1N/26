@@ -77,9 +77,10 @@ locals {
       aws ec2 get-console-output --instance-id "$INSTANCE_ID" --region "$REGION" \
         --query "Output" --output text 2>/dev/null | tail -60 || true
       echo "=================================================================="
-      echo "WARNING: could not auto-create Kafka topics (SSM not ready). Continuing apply anyway;"
-      echo "create the topics manually later (kafka-topics.sh via SSM once online, or CloudShell)."
-      exit 0
+      echo "ERROR: could not auto-create Kafka topics (SSM not ready)."
+      echo "토픽 없이 apply를 계속하면 Lambda event source mapping이 Disabled 상태로 굳어버린다."
+      echo "SSM이 온라인이 된 뒤 terraform apply를 다시 실행하라."
+      exit 1
     fi
 
     COMMAND_ID=$(aws ssm send-command \
@@ -105,9 +106,9 @@ locals {
       --region "$REGION"
 
     if [ "$CMD_STATUS" != "Success" ]; then
-      echo "WARNING: topic creation command did not succeed ($CMD_STATUS). Continuing apply anyway;"
-      echo "create the topics manually later if needed."
-      exit 0
+      echo "ERROR: topic creation command did not succeed ($CMD_STATUS)."
+      echo "위 get-command-invocation 출력에서 실패 원인을 확인한 뒤 다시 apply 하라."
+      exit 1
     fi
   EOT
 
@@ -152,9 +153,10 @@ locals {
       $Console = aws ec2 get-console-output --instance-id $InstanceId --region $Region --query "Output" --output text
       if ($Console) { ($Console -split "`n") | Select-Object -Last 60 }
       Write-Host "=================================================================="
-      Write-Host "WARNING: could not auto-create Kafka topics (SSM not ready). Continuing apply anyway;"
-      Write-Host "create the topics manually later (kafka-topics.sh via SSM once online, or CloudShell)."
-      exit 0
+      Write-Host "ERROR: could not auto-create Kafka topics (SSM not ready)."
+      Write-Host "Topics must exist before the Lambda event source mappings are created."
+      Write-Host "Wait for SSM to come online and run terraform apply again."
+      exit 1
     }
 
     $CommandId = aws ssm send-command --instance-ids $InstanceId --document-name "AWS-RunShellScript" --parameters "file://${local.params_path}" --query "Command.CommandId" --output text --region $Region
@@ -170,9 +172,9 @@ locals {
     aws ssm get-command-invocation --command-id $CommandId --instance-id $InstanceId --region $Region
 
     if ($CmdStatus -ne "Success") {
-      Write-Host "WARNING: topic creation command did not succeed ($CmdStatus). Continuing apply anyway;"
-      Write-Host "create the topics manually later if needed."
-      exit 0
+      Write-Host "ERROR: topic creation command did not succeed ($CmdStatus)."
+      Write-Host "Check the get-command-invocation output above, then run terraform apply again."
+      exit 1
     }
   EOT
 }

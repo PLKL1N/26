@@ -3,11 +3,14 @@ resource "aws_security_group" "endpoints" {
   description = "Allow HTTPS from the MSK cluster SG (the event source mapping poller uses the MSK cluster security group)"
   vpc_id      = var.vpc_id
 
+  # STS 엔드포인트는 private_dns_enabled=true 이므로 VPC 안의 모든 sts.* 호출이
+  # 이 엔드포인트로 향한다. ESM 폴러(MSK SG)뿐 아니라 Lambda 함수 자신(lambda SG)과
+  # EC2도 STS를 호출하므로 VPC CIDR 전체를 허용해야 한다.
   ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = [var.msk_sg_id]
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
   }
 
   egress {
