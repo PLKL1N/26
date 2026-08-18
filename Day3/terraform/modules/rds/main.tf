@@ -41,6 +41,17 @@ resource "aws_db_parameter_group" "mysql80" {
     value        = "180"
     apply_method = "pending-reboot"
   }
+  parameter {
+    name         = "wait_timeout"
+    value        = "60"
+    apply_method = "immediate"
+  }
+
+  parameter {
+    name         = "interactive_timeout"
+    value        = "60"
+    apply_method = "immediate"
+  }  
 
   lifecycle {
     create_before_destroy = true

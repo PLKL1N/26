@@ -62,7 +62,7 @@ resource "aws_db_proxy" "this" {
   vpc_subnet_ids         = var.db_subnet_ids
   vpc_security_group_ids = [aws_security_group.proxy.id]
   require_tls            = false
-  idle_client_timeout    = 1800
+  idle_client_timeout    = 300
 
   auth {
     auth_scheme               = "SECRETS"
