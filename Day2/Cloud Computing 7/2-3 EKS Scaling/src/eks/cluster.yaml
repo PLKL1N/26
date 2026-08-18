@@ -1,0 +1,55 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: skm-eks-cluster
+  version: "1.35"
+  region: ap-northeast-2
+  tags:
+    karpenter.sh/discovery: skm-eks-cluster
+
+accessConfig:
+  authenticationMode: API_AND_CONFIG_MAP
+
+cloudWatch:
+  clusterLogging:
+    enableTypes: ["*"]
+
+iam:
+  withOIDC: true
+
+vpc:
+  subnets:
+    public:
+      ap-northeast-2a: { id: PUBLIC_A }
+      ap-northeast-2c: { id: PUBLIC_C }
+    private:
+      ap-northeast-2a: { id: PRIVATE_A }
+      ap-northeast-2c: { id: PRIVATE_C }
+
+managedNodeGroups:
+  - name: skm-cluster-addon-ng
+    instanceName: skm-cluster-addon-ng-node
+    instanceType: t3.medium
+    amiFamily: AmazonLinux2023
+    desiredCapacity: 1
+    minSize: 1
+    maxSize: 1
+    volumeSize: 30
+    volumeType: gp3
+    privateNetworking: true
+    propagateASGTags: true
+    labels:
+      role: cluster-addon
+    taints:
+      - key: dedicated
+        value: cluster-addon
+        effect: NoSchedule
+    tags:
+      Name: skm-cluster-addon-ng-node
+    iam:
+      attachPolicyARNs:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
