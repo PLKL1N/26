@@ -29,7 +29,19 @@ kubectl rollout restart deploy/coredns -n kube-system
 kubectl create ns wsc2026
 kubectl create ns observability
 
-eksctl create addon --cluster $EKS_CLUSTER_NAME --name=eks-pod-identity-agent --region $REGION_CODE --force
+eksctl create addon \
+  --cluster $EKS_CLUSTER_NAME \
+  --name=eks-pod-identity-agent \
+  --region $REGION_CODE \
+  --force \
+  --wait
+
+aws eks wait addon-active \
+  --cluster-name $EKS_CLUSTER_NAME \
+  --addon-name eks-pod-identity-agent \
+  --region $REGION_CODE
+
+kubectl rollout status ds/eks-pod-identity-agent -n kube-system --timeout=300s
 
 eksctl create podidentityassociation \
   --region $REGION_CODE \
@@ -39,8 +51,25 @@ eksctl create podidentityassociation \
   --role-arn $FLUENT_BIT_ROLE_ARN \
   --create-service-account
 
+until aws eks list-pod-identity-associations \
+        --cluster-name $EKS_CLUSTER_NAME \
+        --namespace observability \
+        --service-account wsc2026-fluent-bit-sa \
+        --region $REGION_CODE \
+        --query "associations[0].associationId" --output text | grep -qv "^None$"; do
+  echo "waiting for fluent-bit pod identity association..."
+  sleep 5
+done
+
 kubectl apply -f /home/ec2-user/eks/manifest/logging/configmap.yaml
 kubectl apply -f /home/ec2-user/eks/manifest/logging/daemonset.yaml
+
+kubectl rollout restart ds/fluent-bit -n observability
+kubectl rollout status ds/fluent-bit -n observability --timeout=300s
+
+kubectl get ds fluent-bit -n observability -o yaml | grep -q "AWS_CONTAINER_CREDENTIALS_FULL_URI" \
+  && echo "[OK] fluent-bit pod identity injected" \
+  || echo "[WARN] fluent-bit pod identity NOT injected"
 
 eksctl create podidentityassociation \
   --region $REGION_CODE \
@@ -49,6 +78,16 @@ eksctl create podidentityassociation \
   --service-account-name "wsc2026-book-sa" \
   --role-arn $DYNAMODB_ROLE_ARN \
   --create-service-account
+
+until aws eks list-pod-identity-associations \
+        --cluster-name $EKS_CLUSTER_NAME \
+        --namespace wsc2026 \
+        --service-account wsc2026-book-sa \
+        --region $REGION_CODE \
+        --query "associations[0].associationId" --output text | grep -qv "^None$"; do
+  echo "waiting for book pod identity association..."
+  sleep 5
+done
 
 KMS_KEY_ALIASE_NAME="alias/wsc2026-db-kms"
 KMS_KEY_ARN=$(aws kms describe-key --key-id $KMS_KEY_ALIASE_NAME --query "KeyMetadata.Arn" --output text --region $REGION_CODE)
@@ -59,6 +98,9 @@ kubectl apply -f /home/ec2-user/eks/manifest/configmap.yaml
 kubectl apply -f /home/ec2-user/eks/manifest/deployment.yaml
 kubectl apply -f /home/ec2-user/eks/manifest/service.yaml
 
+kubectl rollout restart deploy/wsc2026-book-deploy -n wsc2026
+kubectl rollout status deploy/wsc2026-book-deploy -n wsc2026 --timeout=300s
+
 helm repo add eks https://aws.github.io/eks-charts
 helm repo update eks
 helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller \
@@ -66,13 +108,13 @@ helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set clusterName=$EKS_CLUSTER_NAME \
   -f /home/ec2-user/eks/manifest/ingress/values.yaml
 
+kubectl rollout status deploy/aws-load-balancer-controller -n kube-system --timeout=300s
+
 ALB_SECURITY_GROUP_ID=$(aws ec2 describe-security-groups --query "SecurityGroups[?GroupName=='$ALB_SECURITY_GROUP_NAME'].GroupId" --output text --region $REGION_CODE)
 EKS_CLUSTER_SECURITY_GROUP_ID=$(aws eks describe-cluster --name $EKS_CLUSTER_NAME --query "cluster.resourcesVpcConfig.clusterSecurityGroupId" --output text --region $REGION_CODE)
 aws ec2 authorize-security-group-ingress --group-id $EKS_CLUSTER_SECURITY_GROUP_ID --protocol tcp --port 8080 --source-group $ALB_SECURITY_GROUP_ID > /dev/null
 
 sed -i "s|SECURITY_GROUP_ID|$ALB_SECURITY_GROUP_ID|g" /home/ec2-user/eks/manifest/ingress/ingress.yaml
-
-sleep 20
 
 kubectl apply -f /home/ec2-user/eks/manifest/ingress/ingress.yaml
 
@@ -93,9 +135,13 @@ eksctl create addon \
   --region $REGION_CODE \
   --cluster $EKS_CLUSTER_NAME \
   --service-account-role-arn arn:aws:iam::$ACCOUNT_ID:role/AmazonEKS_EBS_CSI_DriverRole \
-  --force
+  --force \
+  --wait
 
-sleep 10
+aws eks wait addon-active \
+  --cluster-name $EKS_CLUSTER_NAME \
+  --addon-name aws-ebs-csi-driver \
+  --region $REGION_CODE
 
 kubectl apply -f /home/ec2-user/eks/manifest/prometheus/sc.yaml
 
@@ -103,9 +149,8 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 helm upgrade -i prometheus prometheus-community/prometheus \
   -n observability \
-  -f /home/ec2-user/eks/manifest/prometheus/values.yaml
-
-sleep 30
+  -f /home/ec2-user/eks/manifest/prometheus/values.yaml \
+  --wait --timeout 10m
 
 kubectl apply -f /home/ec2-user/eks/manifest/grafana/configmap.yaml
 
@@ -117,8 +162,22 @@ eksctl create podidentityassociation \
   --role-arn $GRAFANA_ROLE_ARN \
   --create-service-account
 
+until aws eks list-pod-identity-associations \
+        --cluster-name $EKS_CLUSTER_NAME \
+        --namespace observability \
+        --service-account wsc2026-grafana-sa \
+        --region $REGION_CODE \
+        --query "associations[0].associationId" --output text | grep -qv "^None$"; do
+  echo "waiting for grafana pod identity association..."
+  sleep 5
+done
+
 helm repo add grafana-community https://grafana-community.github.io/helm-charts
 helm repo update
 helm upgrade -i grafana grafana-community/grafana \
   -n observability \
-  -f /home/ec2-user/eks/manifest/grafana/values.yaml
+  -f /home/ec2-user/eks/manifest/grafana/values.yaml \
+  --wait --timeout 10m
+
+kubectl rollout restart deploy/grafana -n observability
+kubectl rollout status deploy/grafana -n observability --timeout=300s

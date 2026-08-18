@@ -84,7 +84,7 @@ serverFiles:
 
           - alert: HighErrorRate
             expr: |
-              (sum(log_metric_counter_app_requests_total{status_class=~"4xx|5xx"}) / sum(log_metric_counter_app_requests_total)) * 100 > 5
+              ((sum(increase(log_metric_counter_app_requests_total{status_class=~"4xx|5xx"}[5m])) or vector(0)) / clamp_min(sum(increase(log_metric_counter_app_requests_total[5m])), 1)) * 100 > 5
             for: 1m
             labels:
               severity: critical
