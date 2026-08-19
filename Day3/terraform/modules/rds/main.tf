@@ -38,20 +38,38 @@ resource "aws_db_parameter_group" "mysql80" {
 
   parameter {
     name         = "max_connections"
-    value        = "180"
+    value        = "85"
     apply_method = "pending-reboot"
   }
   parameter {
     name         = "wait_timeout"
-    value        = "60"
+    value        = "300"
     apply_method = "immediate"
   }
 
   parameter {
     name         = "interactive_timeout"
-    value        = "60"
+    value        = "300"
     apply_method = "immediate"
   }  
+
+  parameter {
+    name         = "sort_buffer_size"
+    value        = "262144"
+    apply_method = "immediate"
+  }
+
+  parameter {
+    name         = "join_buffer_size"
+    value        = "262144"
+    apply_method = "immediate"
+  }
+
+  parameter {
+    name         = "max_execution_time"
+    value        = "3000"        # 밀리초 단위 = 3초
+    apply_method = "immediate"
+  }
 
   lifecycle {
     create_before_destroy = true
@@ -67,6 +85,7 @@ resource "aws_db_instance" "this" {
   allocated_storage = var.allocated_storage
   storage_type      = "gp3"
   storage_encrypted = true
+  allocated_storage = 20
 
   db_name  = var.db_name
   username = var.db_username
