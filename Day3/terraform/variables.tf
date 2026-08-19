@@ -26,7 +26,7 @@ variable "enable_cloudwatch" {
   type    = bool
   default = false
 }
-# ===== CloudWatch 대시보드용 =====
+
 variable "cluster_name" {
   description = "EKS 클러스터명 (Container Insights 차원)"
   type        = string
