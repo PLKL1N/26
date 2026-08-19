@@ -111,7 +111,7 @@ spec:
     kind: Deployment
     name: user-deploy
   minReplicas: 2
-  maxReplicas: 5
+  maxReplicas: 10
   metrics:
     - type: Resource
       resource:

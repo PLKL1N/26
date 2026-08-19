@@ -267,16 +267,16 @@
                 "yAxis": {
                     "left": {
                         "min": 0,
-                        "max": 8
+                        "max": 20
                     }
                 },
                 "annotations": {
                     "horizontal": [
                         [
                             {
+                                "color": "#2ca02c",
                                 "label": "여유",
-                                "value": 0,
-                                "color": "#2ca02c"
+                                "value": 0
                             },
                             {
                                 "value": 4
@@ -284,30 +284,30 @@
                         ],
                         [
                             {
+                                "color": "#ff9900",
                                 "label": "주의",
-                                "value": 4,
-                                "color": "#ff9900"
+                                "value": 4
                             },
                             {
-                                "value": 6
+                                "value": 14
                             }
                         ],
                         [
                             {
+                                "color": "#d62728",
                                 "label": "포화",
-                                "value": 6,
-                                "color": "#d62728"
+                                "value": 14
                             },
                             {
-                                "value": 8
+                                "value": 20
                             }
                         ]
                     ]
                 },
                 "metrics": [
-                    [ "ContainerInsights", "service_number_of_running_pods", "ClusterName", "${cluster_name}", "Namespace", "${namespace}", "Service", "user-svc", { "label": "user" } ],
-                    [ "ContainerInsights", "service_number_of_running_pods", "ClusterName", "${cluster_name}", "Namespace", "${namespace}", "Service", "product-svc", { "label": "product" } ],
-                    [ "ContainerInsights", "service_number_of_running_pods", "ClusterName", "${cluster_name}", "Namespace", "${namespace}", "Service", "stress-svc", { "label": "stress" } ]
+                    [ "ContainerInsights", "service_number_of_running_pods", "ClusterName", "${cluster_name}", "Namespace", "${namespace}", "Service", "user-svc", { "label": "user", "region": "${region}" } ],
+                    [ "...", "product-svc", { "label": "product", "region": "${region}" } ],
+                    [ "...", "stress-svc", { "label": "stress", "region": "${region}" } ]
                 ]
             }
         },

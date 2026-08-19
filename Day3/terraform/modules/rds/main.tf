@@ -38,7 +38,7 @@ resource "aws_db_parameter_group" "mysql80" {
 
   parameter {
     name         = "max_connections"
-    value        = "85"
+    value        = "180"
     apply_method = "pending-reboot"
   }
   parameter {
