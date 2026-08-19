@@ -15,7 +15,17 @@ spec:
       labels:
         app: user
     spec:
-
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: ["stress"]
+                topologyKey: kubernetes.io/hostname
       containers:
         - name: user
           image: ACCOUNT_ID.dkr.ecr.ap-northeast-2.amazonaws.com/apdev-user:v1
