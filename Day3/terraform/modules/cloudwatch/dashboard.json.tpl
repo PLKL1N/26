@@ -267,7 +267,7 @@
                 "yAxis": {
                     "left": {
                         "min": 0,
-                        "max": 20
+                        "max": 10
                     }
                 },
                 "annotations": {
@@ -289,17 +289,17 @@
                                 "value": 4
                             },
                             {
-                                "value": 14
+                                "value": 8
                             }
                         ],
                         [
                             {
                                 "color": "#d62728",
                                 "label": "포화",
-                                "value": 14
+                                "value": 8
                             },
                             {
-                                "value": 20
+                                "value": 10
                             }
                         ]
                     ]

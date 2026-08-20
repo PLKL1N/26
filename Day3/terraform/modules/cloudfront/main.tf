@@ -97,6 +97,30 @@ resource "aws_cloudfront_cache_policy" "product_get" {
   }
 }
 
+resource "aws_cloudfront_cache_policy" "user_get" {
+  name        = "${var.project}-user-get"
+  min_ttl     = 0
+  max_ttl     = 60
+  default_ttl = 20
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    query_strings_config {
+      query_string_behavior = "whitelist"
+      query_strings {
+        items = ["email"]
+      }
+    }
+    headers_config {
+      header_behavior = "none"
+    }
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    enable_accept_encoding_gzip   = true
+    enable_accept_encoding_brotli = true
+  }
+}
+
 resource "aws_cloudfront_response_headers_policy" "images_download" {
   name = "${var.project}-images-download"
 
@@ -156,6 +180,17 @@ resource "aws_cloudfront_distribution" "this" {
     cached_methods         = ["GET", "HEAD"]
 
     cache_policy_id          = aws_cloudfront_cache_policy.product_get.id
+    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/v1/user"
+    target_origin_id       = "alb-api"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD"]
+
+    cache_policy_id          = aws_cloudfront_cache_policy.user_get.id
     origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
   }
 
