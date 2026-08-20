@@ -164,7 +164,7 @@ dashboards:
               "id": 1,
               "options": {
                 "barRadius": 0,
-                "barWidth": 0.05
+                "barWidth": 0.05,
                 "fullHighlight": false,
                 "groupWidth": 0.7,
                 "legend": {
