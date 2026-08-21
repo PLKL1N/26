@@ -85,7 +85,7 @@ data:
         Region              ap-northeast-2
         Log_Group_Name      /unicorn/eks/book-app
         Log_Stream_Name     /unicorn/eks/book-app/stream
-        Auto_Create_Group   true
+        Auto_Create_Group   false
         Log_Key             cw_log
 
     [OUTPUT]
@@ -106,18 +106,44 @@ data:
     [PARSER]
         Name                access_log
         Format              regex
-        Regex               ^(?<timestamp>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) access method=(?<method>[^ ]+) path=(?<path>[^ ]+) status=(?<status_code>\d+)\s*duration=(?<duration_ms>[0-9.]+)ms remote_addr=(?<client_ip>[^ :]+):(?<port>[0-9]+) user_agent="(?<user_agent>[^"]*)".*$
-        Types               status_code:integer duration_ms:float port:integer
+        Regex               ^(?<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) access method=(?<method>[^ ]+) path=(?<path>[^ ]+) status=(?<status_code>\d+)\s+duration=(?<duration_raw>[^ ]+) remote_addr=(?<client_ip>[^ ]+):(?<port>\d+) user_agent="(?<user_agent>[^"]*)"
+        Types               status_code:integer port:integer
 
   metric.lua: |
+    local units = {
+        ["ns"]        = 0.000000001,
+        ["us"]        = 0.000001,
+        ["\194\181s"] = 0.000001,
+        ["\206\188s"] = 0.000001,
+        ["ms"]        = 0.001,
+        ["s"]         = 1,
+        ["m"]         = 60,
+        ["h"]         = 3600
+    }
+
     function convert_duration(tag, timestamp, record)
-        if record["duration_ms"] ~= nil then
-            local ms = tonumber(record["duration_ms"])
-            if ms ~= nil then
-                record["duration"] = ms / 1000
+        local raw = record["duration_raw"]
+
+        if raw ~= nil then
+            local total = 0
+            local ok = false
+
+            for num, unit in string.gmatch(tostring(raw), "([%d%.]+)([^%d%.]+)") do
+                local n = tonumber(num)
+                local f = units[unit]
+                if n ~= nil and f ~= nil then
+                    total = total + n * f
+                    ok = true
+                end
+            end
+
+            if ok then
+                record["duration"] = total
+                record["duration_ms"] = total * 1000
             end
         end
 
+        record["duration_raw"] = nil
         return 1, timestamp, record
     end
 
