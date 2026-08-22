@@ -468,7 +468,7 @@ locals {
         {
           effect    = "Allow"
           actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-          resources = ["arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:*"]
+          resources = ["arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:*", "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:*:*"]
           conditions = []
         },
         {
@@ -547,8 +547,9 @@ locals {
 
 locals {
   s3s = {
-    "${local.parameter}-static-page-${local.player_number}-bucket" = {
-      tags = {Name = "${local.parameter}-static-page-${local.player_number}-bucket"}
+    "${local.parameter}-static-bucket" = {
+      bucket_name = "${local.parameter}-static-${random_string.bucket_suffix.result}-${local.player_number}-bucket"
+      tags = {Name = "${local.parameter}-static-${random_string.bucket_suffix.result}-${local.player_number}-bucket"}
       
       enable_objects    = true
       objects = [
@@ -568,7 +569,7 @@ locals {
   cloudfronts = {
     "${local.parameter}-cdn" = {
       tags = {Name = "${local.parameter}-cdn"}
-      s3_bucket_name = "${local.parameter}-static-page-${local.player_number}-bucket"
+      s3_bucket_name = "${local.parameter}-static-bucket"
       lambda_name = "${local.parameter}-book-get-function"
 
       enable_waf = true
@@ -606,7 +607,7 @@ locals {
       managed_rules = [
         {
           enabled    = true
-          name       = "AWSanagedRulesCommonRuleSet"
+          name       = "AWSManagedRulesCommonRuleSet"
           priority   = 1
           vendor     = "AWS"
           rule_group = "AWSManagedRulesCommonRuleSet"

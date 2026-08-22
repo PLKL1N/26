@@ -11,6 +11,8 @@ cluster:
 nodeSelector:
   wsc2026/node: addon
 
+enableBackendSecurityGroup: false
+
 enableShield: false
 enableWaf: false
 enableWafv2: false

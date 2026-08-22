@@ -152,6 +152,7 @@ helm upgrade -i prometheus prometheus-community/prometheus \
   -f /home/ec2-user/eks/manifest/prometheus/values.yaml \
   --wait --timeout 10m
 
+sed -i "s|ACCOUNT_ID|$ACCOUNT_ID|g" /home/ec2-user/eks/manifest/grafana/configmap.yaml
 kubectl apply -f /home/ec2-user/eks/manifest/grafana/configmap.yaml
 
 eksctl create podidentityassociation \
@@ -172,9 +173,9 @@ until aws eks list-pod-identity-associations \
   sleep 5
 done
 
-helm repo add grafana-community https://grafana-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
-helm upgrade -i grafana grafana-community/grafana \
+helm upgrade -i grafana grafana/grafana \
   -n observability \
   -f /home/ec2-user/eks/manifest/grafana/values.yaml \
   --wait --timeout 10m

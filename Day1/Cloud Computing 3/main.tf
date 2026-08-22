@@ -232,6 +232,14 @@ module "cloudwatch_logs" {
   metric_filters = each.value.metric_filters
 }
   
+resource "random_string" "bucket_suffix" {
+  length  = 4
+  upper   = false
+  lower   = true
+  numeric = false
+  special = false
+}
+
 module "s3" {
   depends_on = [ module.kms ]
 
@@ -239,7 +247,7 @@ module "s3" {
 
   for_each = local.s3s
 
-  name                   = each.key
+  name                   = each.value.bucket_name
   tags                   = each.value.tags
   enable_objects         = each.value.enable_objects
   objects                = each.value.objects

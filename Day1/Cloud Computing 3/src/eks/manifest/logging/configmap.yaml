@@ -86,6 +86,11 @@ data:
         Label_Field         status_class
 
     [FILTER]
+        Name                grep
+        Match               kube.*
+        Regex               path ^/v1/book$
+
+    [FILTER]
         Name                modify
         Match               kube.*
         Remove              time

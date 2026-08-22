@@ -19,7 +19,22 @@ terraform {
       source = "hashicorp/archive"
       version = "2.7.1"
     }
+
+    random = {
+      source = "hashicorp/random"
+      version = "3.7.2"
+    }
+
+    null = {
+      source = "hashicorp/null"
+      version = "3.2.4"
+    }
   }
+}
+
+provider "aws" {
+  region  = var.seoul_region
+  profile = "default"
 }
 
 provider "aws" {
