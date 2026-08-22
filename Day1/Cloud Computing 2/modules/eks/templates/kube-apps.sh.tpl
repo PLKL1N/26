@@ -19,11 +19,37 @@ docker build -t "$ECR_IMAGE" /home/ec2-user/eks/book
 docker push "$ECR_IMAGE"
 
 echo ">> waiting for ECR image scan to complete..."
+scan_status() {
+  aws ecr describe-image-scan-findings --repository-name "${ecr_repo_name}" \
+    --image-id imageTag=stable --region $REGION_CODE \
+    --query 'imageScanStatus.status' --output text 2>/dev/null || echo "IN_PROGRESS"
+}
+
+SCAN_OK=0
 for i in $(seq 1 30); do
-  ST=$(aws ecr describe-image-scan-findings --repository-name "${ecr_repo_name}" --image-id imageTag=stable --region $REGION_CODE --query 'imageScanStatus.status' --output text 2>/dev/null || echo "IN_PROGRESS")
-  if [ "$ST" = "COMPLETE" ]; then echo ">> scan complete"; break; fi
+  ST=$(scan_status)
+  if [ "$ST" = "COMPLETE" ]; then echo ">> scan complete"; SCAN_OK=1; break; fi
+  if [ "$ST" = "FAILED" ]; then echo ">> scan FAILED, retry once"; break; fi
   sleep 10
 done
+
+# FAILED / 미완료면 강제 재스캔 후 한 번 더 대기 (basic scan 은 24h 내 1회 제한이 있어 실패해도 무시)
+if [ "$SCAN_OK" -ne 1 ]; then
+  aws ecr start-image-scan --repository-name "${ecr_repo_name}" --image-id imageTag=stable --region $REGION_CODE > /dev/null 2>&1 || true
+  for i in $(seq 1 30); do
+    ST=$(scan_status)
+    if [ "$ST" = "COMPLETE" ]; then echo ">> scan complete"; SCAN_OK=1; break; fi
+    sleep 10
+  done
+fi
+
+echo ">> scan result (findingSeverityCounts):"
+aws ecr describe-image-scan-findings --repository-name "${ecr_repo_name}" \
+  --image-id imageTag=stable --region $REGION_CODE \
+  --query 'imageScanFindings.findingSeverityCounts' --output json || true
+if [ "$SCAN_OK" -ne 1 ]; then
+  echo ">> WARNING: 3-1 채점 실패 위험. imageScanStatus 확인 필요 (베이스 이미지가 Clair 미지원일 가능성)"
+fi
 
 # --------------------------- IRSA(OIDC) : book-sa -> DynamoDB 쓰기 권한 ---------------------------
 # eks-pod-identity-agent 는 모든 노드(addon+app)에 DaemonSet 으로 배포되어 5-4 채점
