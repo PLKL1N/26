@@ -10,7 +10,7 @@ variable "project" {
 
 variable "student_number" {
   type        = string
-  description = "선수 비번호 (S3 버킷 이름 접미사로 사용, apply 시 직접 입력)"
+  description = "비번호 입력"
 }
 
 variable "bucket_name_prefix" {
