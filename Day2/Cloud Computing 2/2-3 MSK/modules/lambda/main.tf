@@ -125,8 +125,6 @@ resource "aws_iam_role_policy" "lambda_data_access" {
   })
 }
 
-# IAM은 최종 일관성 서비스라 역할/정책 생성 직후 Lambda API가 권한을 못 볼 수 있다.
-# (CreateNetworkInterface / DescribeClusterV2 권한 없음 오류의 원인)
 resource "time_sleep" "iam_propagation" {
   depends_on = [
     aws_iam_role_policy_attachment.vpc_access,

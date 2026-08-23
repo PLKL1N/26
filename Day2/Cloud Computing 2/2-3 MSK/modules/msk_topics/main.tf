@@ -17,11 +17,10 @@ locals {
       --partitions ${var.alert_topic_partitions} --replication-factor ${var.alert_topic_replication_factor}
   REMOTE
 
-  remote_cmd_b64 = base64encode(local.remote_cmd)
+  remote_cmd_lf  = replace(local.remote_cmd, "\r\n", "\n")
 
-  # Writing the SSM --parameters payload to a real file avoids all of the
-  # native-exe argument quoting problems that both bash and PowerShell have
-  # with embedded double quotes (aws-cli requires --parameters file://...).
+  remote_cmd_b64 = base64encode(local.remote_cmd_lf)
+
   params_path = replace(abspath("${path.module}/build/ssm_params_${var.raw_topic_name}.json"), "\\", "/")
 
   bash_script = <<-EOT

@@ -79,9 +79,6 @@ resource "aws_security_group_rule" "msk_from_lambda" {
   description               = "IAM auth from consumer Lambda"
 }
 
-# AWS Lambda's MSK event source mapping (poller) "belongs to" the MSK cluster's
-# own security group when it talks to the brokers - not the Lambda function's
-# configured VPC security group. It therefore needs the MSK SG to allow itself.
 resource "aws_security_group_rule" "msk_self_9098" {
   type                     = "ingress"
   from_port                = 9092

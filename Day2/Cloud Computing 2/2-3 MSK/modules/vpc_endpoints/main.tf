@@ -3,9 +3,6 @@ resource "aws_security_group" "endpoints" {
   description = "Allow HTTPS from the MSK cluster SG (the event source mapping poller uses the MSK cluster security group)"
   vpc_id      = var.vpc_id
 
-  # STS 엔드포인트는 private_dns_enabled=true 이므로 VPC 안의 모든 sts.* 호출이
-  # 이 엔드포인트로 향한다. ESM 폴러(MSK SG)뿐 아니라 Lambda 함수 자신(lambda SG)과
-  # EC2도 STS를 호출하므로 VPC CIDR 전체를 허용해야 한다.
   ingress {
     from_port   = 443
     to_port     = 443
@@ -25,10 +22,6 @@ resource "aws_security_group" "endpoints" {
   }
 }
 
-# AWS Lambda's MSK/Kafka event source poller runs from ENIs inside your VPC and
-# needs to reach the STS and Lambda service APIs itself (independent of NAT
-# reachability quirks); without these, event source mappings can get stuck
-# reporting a generic "Connection error".
 resource "aws_vpc_endpoint" "sts" {
   vpc_id              = var.vpc_id
   service_name        = "com.amazonaws.${var.region}.sts"
