@@ -1,8 +1,8 @@
-
 cd /home/ec2-user/app/user
 cat > Dockerfile << 'EOF'
 FROM gcr.io/distroless/base-debian12:nonroot
 WORKDIR /app
+COPY --from=gcr.io/distroless/base-debian12:debug /usr/share/zoneinfo /usr/share/zoneinfo
 ENV TZ=Asia/Seoul
 COPY --chmod=755 ./user /app/app
 USER nonroot
@@ -14,6 +14,7 @@ cd /home/ec2-user/app/product
 cat > Dockerfile << 'EOF'
 FROM gcr.io/distroless/base-debian12:nonroot
 WORKDIR /app
+COPY --from=gcr.io/distroless/base-debian12:debug /usr/share/zoneinfo /usr/share/zoneinfo
 ENV TZ=Asia/Seoul
 COPY --chmod=755 ./product /app/app
 USER nonroot
@@ -25,6 +26,7 @@ cd /home/ec2-user/app/stress
 cat > Dockerfile << 'EOF'
 FROM gcr.io/distroless/base-debian12:nonroot
 WORKDIR /app
+COPY --from=gcr.io/distroless/base-debian12:debug /usr/share/zoneinfo /usr/share/zoneinfo
 ENV TZ=Asia/Seoul
 COPY --chmod=755 ./stress /app/app
 USER nonroot

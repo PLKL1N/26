@@ -1,3 +1,5 @@
 scp -i apdev-key.pem user ec2-user@<Public IP>:/home/ec2-user/app/user
 scp -i apdev-key.pem product ec2-user@<Public IP>:/home/ec2-user/app/product
 scp -i apdev-key.pem stress ec2-user@<Public IP>:/home/ec2-user/app/stress
+
+scp -i apdev-key.pem load_user.dump ec2-user@<Public IP>:/home/ec2-user/

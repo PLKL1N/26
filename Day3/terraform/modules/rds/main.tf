@@ -71,6 +71,24 @@ resource "aws_db_parameter_group" "mysql80" {
     apply_method = "immediate"
   }
 
+  parameter {
+    name         = "slow_query_log"
+    value        = "1"
+    apply_method = "immediate"
+  }
+
+  parameter {
+    name         = "long_query_time"
+    value        = "0.2"
+    apply_method = "immediate"
+  }
+
+  parameter {
+    name         = "log_output"
+    value        = "FILE"
+    apply_method = "immediate"
+  }
+
   lifecycle {
     create_before_destroy = true
   }
@@ -100,6 +118,7 @@ resource "aws_db_instance" "this" {
   skip_final_snapshot     = true
   deletion_protection     = false
   apply_immediately       = true
+  enabled_cloudwatch_logs_exports = ["slowquery", "error"]
 
   tags = {
     Name = var.db_identifier
